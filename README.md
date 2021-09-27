@@ -1,1 +1,56 @@
 # GoMicroServices
+
+## TODO
+ - Small Dockerfile to build each MS
+ - Small Docker Compose to link MS and use Docker container
+ - Small Makefile to wrap some useful docker-compose cmd
+ - Small CI/CD for building MS for now
+
+
+## Architecture Thinking
+
+### services:
+- ????
+
+### ORM:
+- Gorm (EZ but not very customizable)
+- Ent (medium, code generation)
+- prisma (little hard, but swagger and it's rocks !) https://github.com/prisma/prisma-client-go
+
+### Databases:
+- Postgres (EZ)
+- ElasticSearch (Medium)
+- Cassandra (Hard)
+- MongoDb (très peu use)
+
+### Transports:
+- Http (easy)
+  Router/frameworks:
+    - Mux (low level)
+    - Gin (high level)
+    - Gorilla (several problems encountered)
+- Grpc (medium)
+- Kafka (hard)
+- socket (nul !)
+- Rabbit MQ (never used)
+- redis (bof)
+- WebSocket (pk pas ?)
+
+### Infra:
+- dockerisation with docker-compose ? (separated but linked, restart management, easy scale)
+- K8s ??
+- Hosting on scaleway ? (ssh ez config)
+- CI/CD with Github action ?
+
+### Tests:
+- Unit (tool intégré dans le binaire go)
+- E2E ?
+
+### Possible Bonus:
+- Front (VueJs 3 ?)
+- proxy, load balancing (nginx ?)
+-
+
+### Organisation:
+- git avec Branch protection
+- airtable ? Notion ? Rien ?

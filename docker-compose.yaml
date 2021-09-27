@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  account:
+    container_name: account_service
+    #    depends_on:
+    #      - ????
+
+    # Build Default Dockerfile in "account" directory.
+    build:
+      context: account
+      dockerfile: build/Dockerfile
+      target: runner
+    # using env file as configuration for non critical variables
+    env_file:
+      - account/.env
+    volumes:
+#      # Keeping Logs for Debug/Monitoring purposes.
+#      - ./logs:/logs
+      # Caching go modules for faster builds.
+      - account_go-modules:/go
+    restart: always
+
+    environment:
+      # Port on which backend is running
+      HOST: "127.0.0.1"
+      PORT: "8000"
+      # Directory to puts logs in.
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+
+    # Port
+    ports:
+      - "8000"
+
+    networks:
+      - auth
+      - account
+
+
+networks:
+  auth:
+    driver: bridge
+  account:
+    driver: bridge
+
+volumes:
+  account_go-modules: {}

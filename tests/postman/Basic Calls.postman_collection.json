@@ -27,9 +27,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/health",
+							"raw": "{{ACCOUNT_URL}}/health",
 							"host": [
-								"{{URL}}"
+								"{{ACCOUNT_URL}}"
 							],
 							"path": [
 								"health"
@@ -50,8 +50,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"User Creation OK\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.expect(pm.response.code).to.eql(201);",
 									"});",
 									"pm.test(\"Validating Data and setting User ID in env\", function () {",
 									"    var jsonData = pm.response.json();",
@@ -76,9 +76,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/account",
+							"raw": "{{ACCOUNT_URL}}/account",
 							"host": [
-								"{{URL}}"
+								"{{ACCOUNT_URL}}"
 							],
 							"path": [
 								"account"
@@ -89,13 +89,26 @@
 				},
 				{
 					"name": "2. Get Account By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/account/{{TEST_USER_ID}}",
+							"raw": "{{ACCOUNT_URL}}/account/{{TEST_USER_ID}}",
 							"host": [
-								"{{URL}}"
+								"{{ACCOUNT_URL}}"
 							],
 							"path": [
 								"account",
@@ -107,13 +120,26 @@
 				},
 				{
 					"name": "3. Get all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/account",
+							"raw": "{{ACCOUNT_URL}}/account",
 							"host": [
-								"{{URL}}"
+								"{{ACCOUNT_URL}}"
 							],
 							"path": [
 								"account"
@@ -128,9 +154,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/account/{{TEST_USER_ID}}",
+							"raw": "{{ACCOUNT_URL}}/account/{{TEST_USER_ID}}",
 							"host": [
-								"{{URL}}"
+								"{{ACCOUNT_URL}}"
 							],
 							"path": [
 								"account",

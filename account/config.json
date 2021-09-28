@@ -1,5 +1,5 @@
 {
-  "Host": "127.0.0.1",
-  "Port": "4000",
+  "Host": "0.0.0.0",
+  "Port": "7500",
   "account_endpoint": "account"
 }

@@ -18,7 +18,7 @@ type UseCase struct {
 	logger zerolog.Logger
 }
 
-func NewGetUseCase(db database) *UseCase {
+func NewUseCase(db database) *UseCase {
 	return &UseCase{
 		DB:     db,
 		logger: log.With().Str("service", "UseCase").Logger(),

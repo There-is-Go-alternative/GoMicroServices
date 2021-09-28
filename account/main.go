@@ -5,7 +5,7 @@ import (
 	"flag"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/transport/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -45,14 +45,14 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Account Database ...")
-	accountStorage := database.NewClientMemMapStorage()
+	accountStorage := database.NewAccountMemMapStorage()
 
 	// Initialising Account UseCase
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Account UseCase ...")
 	// TODO: Change get use case by main usecase
-	accountUseCase := usecase.NewGetUseCase(accountStorage)
+	accountUseCase := usecase.NewUseCase(accountStorage)
 
 	// Initialising Gin Server
 	log.WithFields(log.Fields{

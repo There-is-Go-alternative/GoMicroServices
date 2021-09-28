@@ -34,8 +34,8 @@ type MemMapStorage struct {
 	logger zerolog.Logger
 }
 
-// NewClientMemMapStorage return a MemMapStorage pointer initialised.
-func NewClientMemMapStorage() (m *MemMapStorage) {
+// NewAccountMemMapStorage return a MemMapStorage pointer initialised.
+func NewAccountMemMapStorage() (m *MemMapStorage) {
 	m = new(MemMapStorage)
 	m.storage = make(map[string]*domain.Account)
 	m.Rcv = make(chan func() error)

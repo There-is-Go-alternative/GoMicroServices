@@ -63,9 +63,8 @@ func main() {
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...
 	type service struct {
-		name     string
-		fct      func(context.Context) error
-		shutdown func(context.Context) error
+		name string
+		fct  func(context.Context) error
 	}
 	services := []service{
 		{

@@ -11,7 +11,7 @@ services:
       context: account
       dockerfile: build/Dockerfile
       target: runner
-    # using env file as configuration for non critical variables
+    # using env file as configuration for non-critical variables
     env_file:
       - account/.env
     volumes:
@@ -22,16 +22,16 @@ services:
     restart: always
 
     environment:
-      # Port on which backend is running
-      HOST: "127.0.0.1"
-      PORT: "8000"
+#      # Port on which backend is running
+#      HOST: "127.0.0.1"
+#      PORT: "8000"
       # Directory to puts logs in.
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
 
     # Port
     ports:
-      - "8000"
+      - "7500:7500"
 
     networks:
       - auth

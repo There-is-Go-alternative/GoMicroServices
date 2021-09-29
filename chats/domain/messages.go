@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	// chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
-
 	"github.com/google/uuid"
 )
 

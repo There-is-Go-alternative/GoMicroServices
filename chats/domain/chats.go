@@ -2,6 +2,7 @@ package domain
 
 import (
 	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
+
 	"github.com/google/uuid"
 )
 

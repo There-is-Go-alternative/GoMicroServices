@@ -3,12 +3,13 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
+	netHTTP "net/http"
+
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/config"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	netHTTP "net/http"
 )
 
 type Server struct {
@@ -17,10 +18,10 @@ type Server struct {
 }
 
 type useCase interface {
-	CreateAccount() usecase.CreateAccountCmd
-	GetAccountById() usecase.GetAccountByIdCmd
-	GetAllAccounts() usecase.GetAllAccountsCmd
-	DeleteAccount() usecase.DeleteAccountCmd
+	CreateAd() usecase.CreateAdCmd
+	GetAdById() usecase.GetAdByIdCmd
+	GetAllAds() usecase.GetAllAdsCmd
+	DeleteAd() usecase.DeleteAdCmd
 }
 
 // TODO: change database by future Database interface
@@ -30,14 +31,14 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	router.GET("/health", func(c *gin.Context) {
 		c.Status(netHTTP.StatusOK)
 	})
-	accountHandler := NewAccountHandler()
-	// Grouping Account routes with url specified in config (I.E: 'account')
-	account := router.Group(fmt.Sprintf("/%s", conf.AccountEndpoint))
+	adHandler := NewAdHandler()
+	// Grouping Ad routes with url specified in config (I.E: 'ad')
+	ad := router.Group(fmt.Sprintf("/%s", conf.AdEndpoint))
 	{
-		account.POST("/", accountHandler.CreateAccountHandler(uc.CreateAccount()))
-		account.GET("/", accountHandler.GetAccountsHandler(uc.GetAllAccounts()))
-		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountById()))
-		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
+		ad.POST("/", adHandler.CreateAdHandler(uc.CreateAd()))
+		ad.GET("/", adHandler.GetAdsHandler(uc.GetAllAds()))
+		ad.GET("/:id", adHandler.GetAdsByIDHandler(uc.GetAdById()))
+		ad.DELETE("/:id", adHandler.DeleteAdHandler(uc.DeleteAd()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

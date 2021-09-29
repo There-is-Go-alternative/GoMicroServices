@@ -1,13 +1,13 @@
 package config
 
 import (
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/utils"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/utils"
 )
 
 type Config struct {
-	Host            string `json:"host,omitempty"`
-	Port            string `json:"port,omitempty"`
-	AccountEndpoint string `json:"account_endpoint,omitempty"`
+	Host       string `json:"host,omitempty"`
+	Port       string `json:"port,omitempty"`
+	AdEndpoint string `json:"ad_endpoint,omitempty"`
 }
 
 func ParseConfigFromPath(path string) (conf *Config, err error) {

@@ -1,9 +1,9 @@
 package xerrors
 
 const (
-	InvalidAccountID Error = "Account ID is invalid"
-	AccountNotFound  Error = "Account not found"
-	MissingParam     Error = "Missing param"
+	InvalidAdID  Error = "Ad ID is invalid"
+	AdNotFound   Error = "Ad not found"
+	MissingParam Error = "Missing param"
 )
 
 const (

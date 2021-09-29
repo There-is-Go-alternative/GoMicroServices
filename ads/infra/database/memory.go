@@ -2,8 +2,9 @@ package database
 
 import (
 	"context"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
+
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -15,7 +16,7 @@ type MemMapStorage struct {
 	// storage keep the domain.Account in storage
 	// As a map is not concurrent safe by design,
 	// we use channels to communicate instructions
-	storage map[string]*domain.Account
+	storage map[string]*domain.Ad
 
 	// Rcv is a channel that wait instruction to be performed.
 	// Rcv is waiting instructions to perform in a go-routine launched with Init method.
@@ -37,10 +38,10 @@ type MemMapStorage struct {
 // NewClientMemMapStorage return a MemMapStorage pointer initialised.
 func NewClientMemMapStorage() (m *MemMapStorage) {
 	m = new(MemMapStorage)
-	m.storage = make(map[string]*domain.Account)
+	m.storage = make(map[string]*domain.Ad)
 	m.Rcv = make(chan func() error)
 	m.Err = make(chan error)
-	m.logger = log.With().Str("service", "AccountMemMapStorage").Logger()
+	m.logger = log.With().Str("service", "AdMemMapStorage").Logger()
 	m.closing = make(chan chan struct{})
 	return
 }
@@ -66,18 +67,18 @@ func (m *MemMapStorage) Run(ctx context.Context) error {
 
 // Save add a domain.Account to the MemMapStorage
 // Use lambda to access the map of domain.Account
-func (m *MemMapStorage) Save(accounts ...*domain.Account) error {
-	if len(accounts) == 0 {
+func (m *MemMapStorage) Save(ads ...*domain.Ad) error {
+	if len(ads) == 0 {
 		return nil
 	}
 	m.Rcv <- func() error {
-		for _, a := range accounts {
+		for _, a := range ads {
 			if a == nil {
-				m.logger.Warn().Msg("Tried to add a null account")
+				m.logger.Warn().Msg("Tried to add a null ad")
 				continue
 			}
 			m.storage[a.ID.String()] = a
-			m.logger.Info().Msgf("Adding Account: %v", a)
+			m.logger.Info().Msgf("Adding ad: %v", a)
 		}
 		return nil
 	}
@@ -85,25 +86,25 @@ func (m *MemMapStorage) Save(accounts ...*domain.Account) error {
 }
 
 // ByID Retrieve the info that match "id" in map of domain.Account.
-func (m *MemMapStorage) ByID(ID domain.AccountID) (*domain.Account, error) {
+func (m *MemMapStorage) ByID(ID domain.AdID) (*domain.Ad, error) {
 	// Validate AccountID requested
 	if !ID.Validate() {
-		return nil, xerrors.InvalidAccountID
+		return nil, xerrors.InvalidAdID
 	}
 
 	// Setup a receive channel to hold the result.
-	rcv := make(chan *domain.Account)
+	rcv := make(chan *domain.Ad)
 
 	// Sending the function to execute in MemMapStorage.Run
 	m.Rcv <- func() error {
 		//Check in map for presence of an account by its ID
-		if account, ok := m.storage[ID.String()]; ok {
-			rcv <- account
+		if ad, ok := m.storage[ID.String()]; ok {
+			rcv <- ad
 			return nil
 		}
 		// Account not found, returning error
 		rcv <- nil
-		return xerrors.AccountNotFound
+		return xerrors.AdNotFound
 	}
 	// Waiting for response in channels
 	return <-rcv, <-m.Err
@@ -111,10 +112,10 @@ func (m *MemMapStorage) ByID(ID domain.AccountID) (*domain.Account, error) {
 
 // All return all commonNetwork.Client in ClientMemMapStorage.
 // Use lambda to and a dedicated channel to access the map of commonNetwork.Client
-func (m *MemMapStorage) All() ([]*domain.Account, error) {
-	rcv := make(chan []*domain.Account)
+func (m *MemMapStorage) All() ([]*domain.Ad, error) {
+	rcv := make(chan []*domain.Ad)
 	m.Rcv <- func() error {
-		var lst []*domain.Account
+		var lst []*domain.Ad
 		for _, c := range m.storage {
 			lst = append(lst, c)
 		}
@@ -126,14 +127,14 @@ func (m *MemMapStorage) All() ([]*domain.Account, error) {
 
 // Remove remove a commonNetwork.Client from the ClientMemMapStorage
 // Use lambda to access the map of commonNetwork.Client
-func (m *MemMapStorage) Remove(accounts ...*domain.Account) error {
-	if len(accounts) <= 0 {
+func (m *MemMapStorage) Remove(ads ...*domain.Ad) error {
+	if len(ads) <= 0 {
 		return nil
 	}
 
 	// Send lambda to remove commonNetwork.Client from ClientMemMapStorage
 	m.Rcv <- func() error {
-		for _, c := range accounts {
+		for _, c := range ads {
 			delete(m.storage, c.ID.String())
 		}
 		return nil

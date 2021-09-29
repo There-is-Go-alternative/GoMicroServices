@@ -1,25 +1,26 @@
 package http
 
 import (
-	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
+	"net/http"
+
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"net/http"
 )
 
 type Handler struct {
 	logger zerolog.Logger
 }
 
-func NewAccountHandler() *Handler {
+func NewAdHandler() *Handler {
 	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
 }
 
-// GetAccountsHandler return the handler responsible for fetching all users account
-func (a Handler) GetAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFunc {
+// GetAdsHandler return the handler responsible for fetching all users account
+func (a Handler) GetAdsHandler(cmd usecase.GetAllAdsCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		payload, err := cmd(c.Request.Context())
 
@@ -32,16 +33,16 @@ func (a Handler) GetAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFu
 	}
 }
 
-// GetAccountsByIDHandler return the handler responsible for fetching a specific account.
-func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIdCmd) gin.HandlerFunc {
+// GetAdsByIDHandler return the handler responsible for fetching a specific account.
+func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
-			a.logger.Error().Msg("GetAccountsByIDHandler: param ID missing.")
+			a.logger.Error().Msg("GetAdsByIDHandler: param ID missing.")
 			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
 			return
 		}
-		payload, err := cmd(c.Request.Context(), domain.AccountID(id))
+		payload, err := cmd(c.Request.Context(), domain.AdID(id))
 
 		if err != nil {
 			a.logger.Error().Msg("Error in GET by /account/:id")
@@ -52,13 +53,13 @@ func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIdCmd) gin.Handl
 	}
 }
 
-// CreateAccountHandler return the handler responsible for creating a user account.
-func (a Handler) CreateAccountHandler(cmd usecase.CreateAccountCmd) gin.HandlerFunc {
+// CreateAdHandler return the handler responsible for creating a user account.
+func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var account usecase.CreateAccountInput
+		var account usecase.CreateAdInput
 		err := c.BindJSON(&account)
 		if err != nil {
-			a.logger.Error().Msgf("User CreateAccountInput invalid: %v", account)
+			a.logger.Error().Msgf("User CreateAdInput invalid: %v", account)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusBadRequest, err)
 			return
@@ -74,17 +75,17 @@ func (a Handler) CreateAccountHandler(cmd usecase.CreateAccountCmd) gin.HandlerF
 	}
 }
 
-// DeleteAccountHandler return the handler responsible for deleting a user account.
-func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerFunc {
+// DeleteAdHandler return the handler responsible for deleting a user account.
+func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
-			a.logger.Error().Msg("DeleteAccountHandler: param ID missing.")
+			a.logger.Error().Msg("DeleteAdHandler: param ID missing.")
 			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
 			return
 		}
 
-		payload, err := cmd(c.Request.Context(), usecase.DeleteAccountInput{ID: domain.AccountID(id)})
+		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST delete account: %v", err)
 			// TODO: better error

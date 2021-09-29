@@ -42,24 +42,24 @@ func main() {
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
 
-	// Initialising Account Database
+	// Initialising Ads Database
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Account Database ...")
-	accountStorage := database.NewClientMemMapStorage()
+	}).Info("Setting up Ads Database ...")
+	adsStorage := database.NewClientMemMapStorage()
 
-	// Initialising Account UseCase
+	// Initialising Ads UseCase
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Account UseCase ...")
+	}).Info("Setting up Ads UseCase ...")
 	// TODO: Change get use case by main usecase
-	accountUseCase := usecase.NewGetUseCase(accountStorage)
+	adsUseCase := usecase.NewGetUseCase(adsStorage)
 
 	// Initialising Gin Server
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Account Http handler ...")
-	ginServer := http.NewHttpServer(accountUseCase, conf)
+	}).Info("Setting up Ads Http handler ...")
+	ginServer := http.NewHttpServer(adsUseCase, conf)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...
@@ -71,7 +71,7 @@ func main() {
 	services := []service{
 		{
 			name: "Database",
-			fct:  accountStorage.Run,
+			fct:  adsStorage.Run,
 		},
 		{
 			name: "Http Server",

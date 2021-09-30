@@ -30,7 +30,7 @@ jobs:
           go get -u golang.org/x/lint/golint
       #Build the application
       - name: Run build
-        run: go build account/
+        run: go build .
 
       #Run lint
       - name: Run lint

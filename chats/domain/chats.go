@@ -15,6 +15,7 @@ func NewChatID() (ChatID, error) {
 
 // Validate check for ChatID integrity
 func (id ChatID) Validate() bool {
+	// Need to find a way to check if the UUID is valid
 	return true
 }
 
@@ -26,12 +27,11 @@ func (id ChatID) String() string {
 	return string(id)
 }
 
-// Chat is a type that represent a Char between two Accounts
+// Chat is a type that represents a Chat between multiple Accounts
 // ID could be later change by a UUID
 type Chat struct {
-	ID      ChatID `json:"id"`
-	UserAID string `json:"user_a_id"`
-	UserBID string `json:"user_b_id"`
+	ID       ChatID   `json:"id"`
+	UsersIDs []string `json:"users_ids"`
 }
 
 // Validate check presence of minimal data required for an Chat.
@@ -41,5 +41,9 @@ func (c Chat) Validate() bool {
 
 func (c Chat) String() string {
 	// All info are present
-	return fmt.Sprintf("%s %s %s", c.ID, c.UserAID, c.UserBID)
+	final_str := fmt.Sprintf("%s", c.ID)
+	for _, elem := range c.UsersIDs {
+		final_str = final_str + " " + elem
+	}
+	return final_str
 }

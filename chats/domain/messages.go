@@ -16,6 +16,7 @@ func NewMessageID() (MessageID, error) {
 
 // Validate check for MessageID integrity
 func (id MessageID) Validate() bool {
+	// Need to find a way to check if the UUID is valid
 	return true
 }
 
@@ -39,13 +40,11 @@ type Message struct {
 
 // Validate check presence of minimal data required for an Message.
 func (m Message) Validate() bool {
-	return m.ID.Validate()
+	return m.ID.Validate() && (m.ChatID != "") && (m.Content != "") && (m.SenderID != "")
 }
 
 func (m Message) String() string {
 	// All info are present
-	return fmt.Sprintf("%s %s %s %d-%02d-%02dT%02d:%02d:%02d-00:00\n",
-		m.ID, m.SenderID, m.Content, m.CreatedAt.Year(), m.CreatedAt.Month(),
-		m.CreatedAt.Day(), m.CreatedAt.Hour(), m.CreatedAt.Minute(),
-		m.CreatedAt.Second())
+	return fmt.Sprintf("%s %s %s %s %s",
+		m.ID, m.ChatID, m.SenderID, m.Content, m.CreatedAt.Format(time.UnixDate))
 }

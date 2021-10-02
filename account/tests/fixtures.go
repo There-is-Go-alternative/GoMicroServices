@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
@@ -20,11 +21,11 @@ var accountFixtures = []*domain.Account{
 	{Firstname: "Matias", Lastname: "CAMPOS", Email: "l'handicapé@epitech.eu", Admin: false},
 }
 
-func DefaultFixtures(db usecase.Database) error {
-	return CreateFixtures(accountFixtures, db)
+func DefaultFixtures(ctx context.Context, db usecase.Database) error {
+	return CreateFixtures(ctx, accountFixtures, db)
 }
 
-func CreateFixtures(fixtures []*domain.Account, db usecase.Database) error {
+func CreateFixtures(ctx context.Context, fixtures []*domain.Account, db usecase.Database) error {
 	for _, a := range fixtures {
 		id, err := domain.NewAccountID()
 		if err != nil {
@@ -33,5 +34,5 @@ func CreateFixtures(fixtures []*domain.Account, db usecase.Database) error {
 		a.ID = *id
 	}
 	log.Info().Msgf("loading fixtures ...")
-	return db.Create(fixtures...)
+	return db.Create(ctx, fixtures...)
 }

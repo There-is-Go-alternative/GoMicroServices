@@ -30,13 +30,13 @@ func (u UseCase) CreateAccount() CreateAccountCmd {
 			}
 		}
 		// Checking in Database if there is no account with this ID.
-		duplicate, err := u.DB.ByID(*accountID)
+		duplicate, err := u.DB.ByID(ctx, *accountID)
 		if err == nil {
 			return nil, fmt.Errorf("account ID (%v) already exist in DB: %v", accountID, duplicate)
 		}
 
 		// Creating account
-		err = u.DB.Create(account)
+		err = u.DB.Create(ctx, account)
 		return account, err
 	}
 }

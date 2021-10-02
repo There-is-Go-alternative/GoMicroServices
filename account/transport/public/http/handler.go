@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
@@ -44,7 +45,12 @@ func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIdCmd) gin.Handl
 		payload, err := cmd(c.Request.Context(), domain.AccountID(id))
 
 		if err != nil {
-			a.logger.Error().Msg("Error in GET by /account/:id")
+			a.logger.Error().Err(err).Msg("Error in GET by /account/:id")
+			// Todo : APIError with switch case on error Code
+			if errors.Is(err, xerrors.AccountNotFound) {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}

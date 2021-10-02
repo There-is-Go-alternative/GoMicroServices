@@ -35,7 +35,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	account := router.Group(fmt.Sprintf("/%s", conf.AccountEndpoint))
 	{
 		account.POST("/", accountHandler.CreateAccountHandler(uc.CreateAccount()))
-		account.GET("/", accountHandler.GetAccountsHandler(uc.GetAllAccounts()))
+		account.GET("/", accountHandler.GetAllAccountsHandler(uc.GetAllAccounts()))
 		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountById()))
 		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
 	}

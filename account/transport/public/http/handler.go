@@ -18,8 +18,8 @@ func NewAccountHandler() *Handler {
 	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
 }
 
-// GetAccountsHandler return the handler responsible for fetching all users account
-func (a Handler) GetAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFunc {
+// GetAllAccountsHandler return the handler responsible for fetching all users account
+func (a Handler) GetAllAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		payload, err := cmd(c.Request.Context())
 

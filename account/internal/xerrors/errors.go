@@ -2,6 +2,7 @@ package xerrors
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -39,7 +40,7 @@ func (e *ErrorWithCode) Is(target error) bool {
 	if !ok || e == nil || t == nil {
 		return false
 	}
-	return e.Code == t.Code && e.Err.Error() == t.Err.Error()
+	return e.Code == t.Code && errors.Is(e.Err, t.Err)
 }
 
 // Unwrap implement Go 1.13 new error interface
@@ -47,15 +48,28 @@ func (e *ErrorWithCode) Unwrap() error {
 	return e.Err
 }
 
-// errList is a type that represent a list of errors to be back-traced.
-type errList []error
+// ErrList is a type that represent a list of errors to be back-traced.
+type ErrList struct {
+	Errs []error
+}
+
+// Add append and error to a ErrList
+func (l *ErrList) Add(err error) {
+	l.Errs = append(l.Errs, err)
+}
+
+// Nil check if there is any error in a ErrList
+func (l *ErrList) Nil() bool {
+	return len(l.Errs) == 0
+}
 
 // Error implement error interface
-// As errList is not exported and Concat is the only function that give access to it,
-// no errors in errList should be nil
-func (l errList) Error() string {
-	filtered := make([]string, 0, len(l))
-	for _, err := range l {
+func (l ErrList) Error() string {
+	filtered := make([]string, 0, len(l.Errs))
+	for _, err := range l.Errs {
+		if err == nil {
+			continue
+		}
 		filtered = append(filtered, err.Error())
 	}
 	return strings.Join(filtered, "\n")
@@ -77,5 +91,5 @@ func Concat(errs ...error) error {
 	if len(filtered) == 0 {
 		return nil
 	}
-	return errList(filtered)
+	return ErrList{Errs: filtered}
 }

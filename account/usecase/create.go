@@ -15,19 +15,28 @@ type CreateAccountInput struct {
 
 func (u UseCase) CreateAccount() CreateAccountCmd {
 	return func(ctx context.Context, input CreateAccountInput) (*domain.Account, error) {
+		// Dealing with CreateAccountInput
 		account := &domain.Account{Email: input.Email}
 		accountID, err := domain.NewAccountID()
 		if err != nil {
-			// TODO: BETTER ERROR
 			return nil, err
 		}
-		account.ID = accountID
-		if !account.Validate() {
+		account.ID = *accountID
+
+		// Validating sent data
+		if err = account.Validate(); err != nil {
 			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user account data: %v", account),
+				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user account data: %v", err),
 			}
 		}
-		err = u.DB.Save(account)
+		// Checking in Database if there is no account with this ID.
+		duplicate, err := u.DB.ByID(*accountID)
+		if err == nil {
+			return nil, fmt.Errorf("account ID (%v) already exist in DB: %v", accountID, duplicate)
+		}
+
+		// Creating account
+		err = u.DB.Create(account)
 		return account, err
 	}
 }

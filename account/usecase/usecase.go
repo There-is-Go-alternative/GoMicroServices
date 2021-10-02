@@ -6,19 +6,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type database interface {
+type Database interface {
+	Create(...*domain.Account) error
+	Update(...*domain.Account) error
 	All() ([]*domain.Account, error)
 	ByID(id domain.AccountID) (*domain.Account, error)
-	Save(...*domain.Account) error
+	ByEmail(email string) ([]*domain.Account, error)
+	ByFirstname(firstname string) ([]*domain.Account, error)
+	ByLastname(lastname string) ([]*domain.Account, error)
+	ByFullname(firstname, lastname string) ([]*domain.Account, error)
 	Remove(...*domain.Account) error
 }
 
 type UseCase struct {
-	DB     database
+	DB     Database
 	logger zerolog.Logger
 }
 
-func NewUseCase(db database) *UseCase {
+func NewUseCase(db Database) *UseCase {
 	return &UseCase{
 		DB:     db,
 		logger: log.With().Str("service", "UseCase").Logger(),

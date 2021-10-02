@@ -47,7 +47,11 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Account Database ...")
-	accountStorage := database.NewAccountMemMapStorage()
+	//accountStorage := database.NewAccountMemMapStorage()
+	accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Initialising Account UseCase
 	log.WithFields(log.Fields{
@@ -68,10 +72,10 @@ func main() {
 		fct  func(context.Context) error
 	}
 	services := []service{
-		{
-			name: "Database",
-			fct:  accountStorage.Run,
-		},
+		//{
+		//	name: "Database",
+		//	fct:  accountStorage.Run,
+		//},
 		{
 			name: "Http Server",
 			fct:  ginServer.Run,
@@ -93,7 +97,7 @@ func main() {
 	}
 
 	if *loadFixture {
-		if err = tests.DefaultFixtures(accountStorage); err != nil {
+		if err = tests.DefaultFixtures(ctx, accountStorage); err != nil {
 			log.Fatal(err)
 		}
 	}

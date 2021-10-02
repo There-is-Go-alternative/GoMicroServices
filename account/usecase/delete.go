@@ -14,7 +14,7 @@ type DeleteAccountInput struct {
 func (u UseCase) DeleteAccount() DeleteAccountCmd {
 	return func(ctx context.Context, input DeleteAccountInput) (*domain.Account, error) {
 		account := domain.Account{ID: input.ID}
-		err := u.DB.Remove(&account)
+		err := u.DB.Remove(ctx, &account)
 		return &account, err
 	}
 }

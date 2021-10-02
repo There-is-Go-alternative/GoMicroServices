@@ -24,6 +24,15 @@ func (e *Error) Is(target error) bool {
 	return string(*e) == string(*t)
 }
 
+// Unwrap implement Go 1.13 new error interface
+func (e *Error) Unwrap() error {
+	return nil
+}
+
+const (
+	ResourceNotFound = iota
+)
+
 type ErrorWithCode struct {
 	Code int
 	Err  error

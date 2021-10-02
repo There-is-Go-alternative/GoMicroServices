@@ -15,7 +15,7 @@ func (u UseCase) GetAllAccounts() GetAllAccountsCmd {
 	return func(ctx context.Context) ([]*domain.Account, error) {
 		u.logger.Info().Msg("Fetching all accounts ...")
 		defer u.logger.Info().Msg("All accounts fetched !")
-		return u.DB.All()
+		return u.DB.All(ctx)
 	}
 }
 
@@ -34,7 +34,7 @@ func (u UseCase) GetAccountById() GetAccountByIdCmd {
 		// TODO: Add auth service check here
 		u.logger.Info().Msgf("Fetching account by id: %v", id)
 		defer u.logger.Info().Msg("All accounts fetched !")
-		return u.DB.ByID(id)
+		return u.DB.ByID(ctx, id)
 	}
 }
 
@@ -57,7 +57,7 @@ func (u UseCase) GetAccountByEmail() GetAccountByEmailCmd {
 		defer u.logger.Info().Msg("All accounts fetched !")
 
 		// Fetching account by Firstname
-		accounts, err := u.DB.ByEmail(cmd.Email)
+		accounts, err := u.DB.ByEmail(ctx, cmd.Email)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func (u UseCase) GetAccountByFirstname() GetAccountByFirstnameCmd {
 		defer u.logger.Info().Msg("All accounts fetched !")
 
 		// Fetching account by Firstname
-		return u.DB.ByFirstname(cmd.Firstname)
+		return u.DB.ByFirstname(ctx, cmd.Firstname)
 	}
 }
 
@@ -117,7 +117,7 @@ func (u UseCase) GetAccountByLastname() GetAccountByLastnameCmd {
 		defer u.logger.Info().Msg("All accounts fetched !")
 
 		// Fetching account by Lastname
-		return u.DB.ByLastname(cmd.Lastname)
+		return u.DB.ByLastname(ctx, cmd.Lastname)
 	}
 }
 
@@ -140,6 +140,6 @@ func (u UseCase) GetAccountByFullname() GetAccountByFullnameCmd {
 		defer u.logger.Info().Msg("All accounts fetched !")
 
 		// Fetching account by Fullname
-		return u.DB.ByFullname(cmd.Firstname, cmd.Lastname)
+		return u.DB.ByFullname(ctx, cmd.Firstname, cmd.Lastname)
 	}
 }

@@ -92,18 +92,18 @@ func (m *MemMapStorage) Save(accounts ...*domain.Account) error {
 }
 
 // Create add list of domain.Account to the MemMapStorage
-func (m *MemMapStorage) Create(accounts ...*domain.Account) error {
+func (m *MemMapStorage) Create(_ context.Context, accounts ...*domain.Account) error {
 	return m.Save(accounts...)
 }
 
 // Update a list of domain.Account to the MemMapStorage
-func (m *MemMapStorage) Update(accounts ...*domain.Account) error {
+func (m *MemMapStorage) Update(_ context.Context, accounts ...*domain.Account) error {
 	return m.Save(accounts...)
 }
 
 // ByID Retrieve the info that match "id" in map of domain.Account.
 // Strict: As ID is the key of the map, return an error if not found
-func (m *MemMapStorage) ByID(ID domain.AccountID) (*domain.Account, error) {
+func (m *MemMapStorage) ByID(_ context.Context, ID domain.AccountID) (*domain.Account, error) {
 	// Validate AccountID requested
 	if err := ID.Validate(); err == nil {
 		return nil, xerrors.InvalidAccountID
@@ -148,28 +148,28 @@ func (m *MemMapStorage) SearchBy(searchFunc func(*domain.Account) bool) ([]*doma
 }
 
 // ByEmail Retrieve the info that match "Email" in map of domain.Account.
-func (m *MemMapStorage) ByEmail(email string) ([]*domain.Account, error) {
+func (m *MemMapStorage) ByEmail(_ context.Context, email string) ([]*domain.Account, error) {
 	return m.SearchBy(func(a *domain.Account) bool {
 		return a.Email == email
 	})
 }
 
 // ByFirstname Retrieve the info that match "FirstName" in map of domain.Account.
-func (m *MemMapStorage) ByFirstname(firstname string) ([]*domain.Account, error) {
+func (m *MemMapStorage) ByFirstname(_ context.Context, firstname string) ([]*domain.Account, error) {
 	return m.SearchBy(func(a *domain.Account) bool {
 		return a.Firstname == firstname
 	})
 }
 
 // ByLastname Retrieve the info that match "Lastname" in map of domain.Account.
-func (m *MemMapStorage) ByLastname(lastname string) ([]*domain.Account, error) {
+func (m *MemMapStorage) ByLastname(_ context.Context, lastname string) ([]*domain.Account, error) {
 	return m.SearchBy(func(a *domain.Account) bool {
 		return a.Lastname == lastname
 	})
 }
 
 // ByFullname Retrieve the info that match "Firstname" and "Lastname" in map of domain.Account.
-func (m *MemMapStorage) ByFullname(firstname, lastname string) ([]*domain.Account, error) {
+func (m *MemMapStorage) ByFullname(_ context.Context, firstname, lastname string) ([]*domain.Account, error) {
 	return m.SearchBy(func(a *domain.Account) bool {
 		return a.Firstname == firstname && a.Lastname == lastname
 	})
@@ -177,7 +177,7 @@ func (m *MemMapStorage) ByFullname(firstname, lastname string) ([]*domain.Accoun
 
 // All return all domain.Account in MemMapStorage.
 // Use lambda to and a dedicated channel to access the map of domain.Account
-func (m *MemMapStorage) All() ([]*domain.Account, error) {
+func (m *MemMapStorage) All(_ context.Context) ([]*domain.Account, error) {
 	rcv := make(chan []*domain.Account)
 	m.Rcv <- func() error {
 		var lst []*domain.Account
@@ -192,7 +192,7 @@ func (m *MemMapStorage) All() ([]*domain.Account, error) {
 
 // Remove a domain.Account from the MemMapStorage
 // Use lambda to access the map of domain.Account
-func (m *MemMapStorage) Remove(accounts ...*domain.Account) error {
+func (m *MemMapStorage) Remove(_ context.Context, accounts ...*domain.Account) error {
 	if len(accounts) <= 0 {
 		return nil
 	}

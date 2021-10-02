@@ -19,13 +19,13 @@ func NewAdHandler() *Handler {
 	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
 }
 
-// GetAdsHandler return the handler responsible for fetching all users account
+// GetAdsHandler return the handler responsible for fetching all ads
 func (a Handler) GetAdsHandler(cmd usecase.GetAllAdsCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		payload, err := cmd(c.Request.Context())
 
 		if err != nil {
-			a.logger.Error().Msg("Error in GET /accounts")
+			a.logger.Error().Msg("Error in GET /ads")
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
@@ -33,7 +33,7 @@ func (a Handler) GetAdsHandler(cmd usecase.GetAllAdsCmd) gin.HandlerFunc {
 	}
 }
 
-// GetAdsByIDHandler return the handler responsible for fetching a specific account.
+// GetAdsByIDHandler return the handler responsible for fetching a specific ad.
 func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -45,7 +45,7 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 		payload, err := cmd(c.Request.Context(), domain.AdID(id))
 
 		if err != nil {
-			a.logger.Error().Msg("Error in GET by /account/:id")
+			a.logger.Error().Msg("Error in GET by /ads/:id")
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
@@ -53,20 +53,20 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 	}
 }
 
-// CreateAdHandler return the handler responsible for creating a user account.
+// CreateAdHandler return the handler responsible for creating an ad.
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var account usecase.CreateAdInput
-		err := c.BindJSON(&account)
+		var ad usecase.CreateAdInput
+		err := c.BindJSON(&ad)
 		if err != nil {
-			a.logger.Error().Msgf("User CreateAdInput invalid: %v", account)
+			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
-		payload, err := cmd(c.Request.Context(), account)
+		payload, err := cmd(c.Request.Context(), ad)
 		if err != nil {
-			a.logger.Error().Msgf("Error in POST create account: %v", err)
+			a.logger.Error().Msgf("Error in POST create ad: %v", err)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -75,7 +75,7 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	}
 }
 
-// DeleteAdHandler return the handler responsible for deleting a user account.
+// DeleteAdHandler return the handler responsible for deleting an ad.
 func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -87,7 +87,7 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 
 		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {
-			a.logger.Error().Msgf("Error in POST delete account: %v", err)
+			a.logger.Error().Msgf("Error in POST delete ad: %v", err)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return

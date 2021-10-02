@@ -2,19 +2,30 @@ package domain
 
 import (
 	"fmt"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
+	"log"
+	"net/mail"
 )
 
 // AccountID is a pseudo-alias that allow future easy modification of Account.ID
 type AccountID string
 
-func NewAccountID() (AccountID, error) {
-	return AccountID(uuid.New().String()), nil
+func NewAccountID() (*AccountID, error) {
+	randomUUID, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+	id := AccountID(randomUUID.String())
+	return &id, nil
 }
 
 // Validate check for AccountID integrity
-func (id AccountID) Validate() bool {
-	return true
+func (id AccountID) Validate() error {
+	if _, err := uuid.Parse(string(id)); err != nil {
+		return fmt.Errorf("ID (%v) is invalid: {%v}", id, err)
+	}
+	return nil
 }
 
 // Equal check for AccountID equality
@@ -25,22 +36,39 @@ func (id AccountID) String() string {
 	return string(id)
 }
 
+func validateEmail(email string) error {
+	_, err := mail.ParseAddress(email)
+	return err
+}
+
 // Account is a type that represent a user account
 // ID could be later change by a UUID
 type Account struct {
 	ID        AccountID `json:"id"`
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
-	Email     string    `json:"email"`
-	Admin     bool      `json:"admin,omitempty"`
-	Address   Address   `json:"address,omitempty"`
+	// Review: Replace by net/email.Address ?
+	Email   string  `json:"email"`
+	Admin   bool    `json:"admin,omitempty"`
+	Address Address `json:"address,omitempty"`
 }
 
 // Validate check presence of minimal data required for an Account.
-func (a Account) Validate() bool {
-	// TODO: fix
-	//return a.ID.Validate() && a.Email != "" && (a.Admin || a.Address.Validate())
-	return a.ID.Validate() && a.Email != ""
+func (a Account) Validate() error {
+	var err error
+	errs := new(xerrors.ErrList)
+	if err = a.ID.Validate(); err != nil {
+		log.Println(err)
+		errs.Add(err)
+	}
+	if err = validateEmail(a.Email); err != nil {
+		log.Println(err)
+		errs.Add(err)
+	}
+	if errs.Nil() {
+		return nil
+	}
+	return errs
 }
 
 func (a Account) String() string {

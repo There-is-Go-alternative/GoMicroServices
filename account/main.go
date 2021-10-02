@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,7 @@ import (
 var (
 	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "path to the json config file.")
 	shutdownTimeOut = flag.Int("timeout", 2, "Time out for graceful shutdown, in seconds.")
+	loadFixture     = flag.Bool("fixtures", false, "Time out for graceful shutdown, in seconds.")
 )
 
 func main() {
@@ -51,7 +53,6 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Account UseCase ...")
-	// TODO: Change get use case by main usecase
 	accountUseCase := usecase.NewUseCase(accountStorage)
 
 	// Initialising Gin Server
@@ -89,6 +90,12 @@ func main() {
 			}).Infof("Running %s", s.name)
 			errChan <- s.fct(ctx)
 		}(fct)
+	}
+
+	if *loadFixture {
+		if err = tests.DefaultFixtures(accountStorage); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// Waiting for a channel to receive something

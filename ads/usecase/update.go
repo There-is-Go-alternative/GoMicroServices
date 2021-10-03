@@ -11,11 +11,11 @@ import (
 type UpdateAdCmd func(ctx context.Context, input UpdateAdInput) (*domain.Ad, error)
 
 type UpdateAdInput struct {
-	ID          domain.AdID `json:"id", omitempty`
-	Title       string      `json:"title", omitempty`
-	Description string      `json:"description", omitempty`
-	Price       uint        `json:"price", omitempty`
-	Picture     string      `json:"picture", omitempty`
+	ID domain.AdID `json:"id,omitempty"`
+	Title string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Price uint `json:"price,omitempty"`
+	Picture string `json:"picture,omitempty"`
 }
 
 func (u UseCase) UpdateAd() UpdateAdCmd {

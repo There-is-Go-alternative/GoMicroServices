@@ -1,7 +1,7 @@
 PROJ_DIR				:= $(realpath $(CURDIR))
 
 # Create the list of directories for micro services, separated by a space (I.E: 'account auth messages')
-MICRO_SERVICES_DIRS		= account
+MICRO_SERVICES_DIRS		= account ads
 
 # Create binary dir path
 BIN_DIR_NAME			= .bin

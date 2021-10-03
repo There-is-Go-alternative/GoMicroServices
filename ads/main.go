@@ -68,7 +68,6 @@ func main() {
 	type service struct {
 		name     string
 		fct      func(context.Context) error
-		shutdown func(context.Context) error
 	}
 	services := []service{
 		{

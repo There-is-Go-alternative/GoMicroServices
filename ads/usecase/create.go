@@ -31,7 +31,7 @@ func (u UseCase) CreateAd() CreateAdCmd {
 				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user ad data: %v", ad),
 			}
 		}
-		err = u.DB.Save(ad)
+		err = u.DB.Create(ctx, ad)
 		return ad, err
 	}
 }

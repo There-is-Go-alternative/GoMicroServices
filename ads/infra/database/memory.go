@@ -88,7 +88,7 @@ func (m *MemMapStorage) Save(ads ...*domain.Ad) error {
 // ByID Retrieve the info that match "id" in map of domain.Account.
 func (m *MemMapStorage) ByID(ID domain.AdID) (*domain.Ad, error) {
 	// Validate AccountID requested
-	if !ID.Validate() {
+	if ID.Validate() != nil {
 		return nil, xerrors.InvalidAdID
 	}
 

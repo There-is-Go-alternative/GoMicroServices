@@ -75,6 +75,34 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	}
 }
 
+// UpdateAdHandler return the handler responsible for updating an ad.
+func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			a.logger.Error().Msg("UpdateAdHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			return
+		}
+		var ad usecase.UpdateAdInput
+		err := c.BindJSON(&ad)
+		ad.ID = domain.AdID(id)
+
+		if err != nil {
+			a.logger.Error().Msgf("User UpdateAdInput invalid: %v", ad)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		payload, err := cmd(c.Request.Context(), ad)
+		if err != nil {
+			a.logger.Error().Msgf("Error in PATCH update ad: %v", err)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusCreated, payload)
+	}
+}
+
 // DeleteAdHandler return the handler responsible for deleting an ad.
 func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -88,7 +116,6 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST delete ad: %v", err)
-			// TODO: better error
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}

@@ -19,6 +19,7 @@ type Server struct {
 
 type useCase interface {
 	CreateAd() usecase.CreateAdCmd
+	UpdateAd() usecase.UpdateAdCmd
 	GetAdById() usecase.GetAdByIdCmd
 	GetAllAds() usecase.GetAllAdsCmd
 	DeleteAd() usecase.DeleteAdCmd
@@ -39,6 +40,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		ad.GET("/", adHandler.GetAdsHandler(uc.GetAllAds()))
 		ad.GET("/:id", adHandler.GetAdsByIDHandler(uc.GetAdById()))
 		ad.DELETE("/:id", adHandler.DeleteAdHandler(uc.DeleteAd()))
+		ad.PATCH("/:id", adHandler.UpdateAdHandler(uc.UpdateAd()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

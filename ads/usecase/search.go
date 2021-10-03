@@ -21,7 +21,7 @@ func (u UseCase) SearchAd() SearchAdCmd {
 		if err != nil {
 			return nil, err
 		}
-		new_ad_list := make([]*domain.Ad, 0)
+		var new_ad_list []*domain.Ad
 
 		for _, ad := range ad_list {
 			if strings.Contains(strings.ToLower(ad.Title), content) {

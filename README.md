@@ -41,7 +41,7 @@
 - WebSocket (pk pas ?)
 
 ### Infra:
-- dockerisation with docker-compose ? (separated but linked, restart management, easy scale)
+- dockerisation with docker-compose
 - K8s ??
 - Hosting on scaleway ? (ssh ez config)
 - CI/CD with Github action ?

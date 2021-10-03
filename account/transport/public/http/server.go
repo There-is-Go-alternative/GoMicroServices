@@ -18,9 +18,11 @@ type Server struct {
 
 type useCase interface {
 	CreateAccount() usecase.CreateAccountCmd
-	GetAccountById() usecase.GetAccountByIdCmd
+	GetAccountByID() usecase.GetAccountByIDCmd
 	GetAllAccounts() usecase.GetAllAccountsCmd
 	DeleteAccount() usecase.DeleteAccountCmd
+	PatchAccount() usecase.PatchAccountCmd
+	UpdateAccount() usecase.UpdateAccountCmd
 }
 
 // TODO: change database by future Database interface
@@ -36,7 +38,9 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	{
 		account.POST("/", accountHandler.CreateAccountHandler(uc.CreateAccount()))
 		account.GET("/", accountHandler.GetAllAccountsHandler(uc.GetAllAccounts()))
-		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountById()))
+		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountByID()))
+		account.PATCH("/:id", accountHandler.PatchAccountHandler(uc.PatchAccount()))
+		account.PUT("/:id", accountHandler.PutAccountHandler(uc.UpdateAccount()))
 		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
 	}
 	return &Server{

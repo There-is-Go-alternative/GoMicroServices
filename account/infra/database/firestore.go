@@ -62,23 +62,42 @@ func (m *FirebaseRealTimeDB) Create(ctx context.Context, accounts ...*domain.Acc
 		return nil
 	}
 
-	errs := xerrors.ErrList{}
+	var errs []error
 	for _, acc := range accounts {
-		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, acc.ID.String())).Set(ctx, acc)
+		err := m.DB.NewRef(m.formatPath(acc.ID.String())).Set(ctx, acc)
 		if err != nil {
-			errs.Add(err)
+			errs = append(errs, err)
 		}
 	}
-
-	if !errs.Nil() {
-		return errs
-	}
-	return nil
+	return xerrors.Concat(errs...)
 }
 
 // Update a list of domain.Account to the MemMapStorage
 func (m *FirebaseRealTimeDB) Update(ctx context.Context, accounts ...*domain.Account) error {
-	return nil
+	// Transaction update handler: This may get invoked multiple times due to retries.
+	updateAccount := func(a *domain.Account) func(tn firebaseDB.TransactionNode) (interface{}, error) {
+		return func(tn firebaseDB.TransactionNode) (interface{}, error) {
+			// Read the current state of the node.
+			var acc domain.Account
+			if err := tn.Unmarshal(&acc); err != nil {
+				return nil, err
+			}
+			// Mutate the state in memory.
+			acc = *a
+
+			// Return the new value which will be written back to the database.
+			return acc, nil
+		}
+	}
+
+	var errs []error
+	for _, a := range accounts {
+		ref := m.DB.NewRef(m.formatPath(a.ID.String()))
+		if err := ref.Transaction(ctx, updateAccount(a)); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return xerrors.Concat(errs...)
 }
 
 // ByID Retrieve the info that match "id".
@@ -160,16 +179,16 @@ func (m *FirebaseRealTimeDB) Remove(ctx context.Context, accounts ...*domain.Acc
 		return nil
 	}
 
-	errs := xerrors.ErrList{}
+	var errs []error
 	for _, acc := range accounts {
 		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, acc.ID.String())).Delete(ctx)
 		if err != nil {
-			errs.Add(err)
+			errs = append(errs, err)
 		}
 	}
+	return xerrors.Concat(errs...)
+}
 
-	if !errs.Nil() {
-		return errs
-	}
-	return nil
+func (m FirebaseRealTimeDB) formatPath(child string) string {
+	return fmt.Sprintf("%v/%v", m.Conf.CollectionName, child)
 }

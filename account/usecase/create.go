@@ -7,16 +7,23 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 )
 
+// --------------------- CreateAccount ------------------------
+
+// CreateAccountCmd is a func type that return the logic for creating a domain.Account.
 type CreateAccountCmd func(ctx context.Context, input CreateAccountInput) (*domain.Account, error)
 
+// CreateAccountInput is used by UseCase.CreateAccount for the creation of an account.
 type CreateAccountInput struct {
-	Email string `json:"email" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
 }
 
+// CreateAccount is the UseCase handler that create a domain.Account.
 func (u UseCase) CreateAccount() CreateAccountCmd {
 	return func(ctx context.Context, input CreateAccountInput) (*domain.Account, error) {
 		// Dealing with CreateAccountInput
-		account := &domain.Account{Email: input.Email}
+		account := &domain.Account{Email: input.Email, Firstname: input.Firstname, Lastname: input.Lastname}
 		accountID, err := domain.NewAccountID()
 		if err != nil {
 			return nil, err

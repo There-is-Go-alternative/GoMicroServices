@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Database is an interface that represent all possible actions that can be performed on a domain.Account DB.
 type Database interface {
 	Create(ctx context.Context, accounts ...*domain.Account) error
 	Update(ctx context.Context, accounts ...*domain.Account) error
@@ -19,11 +20,14 @@ type Database interface {
 	Remove(ctx context.Context, accounts ...*domain.Account) error
 }
 
+// UseCase handle the business logic
 type UseCase struct {
 	DB     Database
 	logger zerolog.Logger
 }
 
+// NewUseCase return an initialized UseCase, using Database
+// TODO: Complete Doc
 func NewUseCase(db Database) *UseCase {
 	return &UseCase{
 		DB:     db,

@@ -71,22 +71,19 @@ func (m *MemMapStorage) Save(accounts ...*domain.Account) error {
 	if len(accounts) == 0 {
 		return nil
 	}
-	errs := &xerrors.ErrList{}
 
+	var errs []error
 	m.Rcv <- func() error {
 		for _, a := range accounts {
 			if err := a.Validate(); err != nil {
 				m.logger.WithLevel(zerolog.DebugLevel).Err(err).Msgf("could not add account: %v", a)
-				errs.Add(err)
+				errs = append(errs, err)
 				continue
 			}
 			m.storage[a.ID.String()] = *a
 			m.logger.Info().Interface("account", a).Msgf("Adding Account: %v", a.Email)
 		}
-		if errs.Nil() {
-			return nil
-		}
-		return errs
+		return xerrors.Concat(errs...)
 	}
 	return <-m.Err
 }

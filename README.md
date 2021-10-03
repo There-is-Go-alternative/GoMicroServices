@@ -1,5 +1,9 @@
 # GoMicroServices
 
+## Question for Follow-Up
+ - Email must be Unique in DB (contact purposes), responsibility is in usecase or Database ?
+ - Update in database, if ID (primary Key) doesn't exist, responsibility to check presence of this ID is in usecase or Database ?
+
 ## TODO
  - Small Dockerfile to build each MS
  - Small Docker Compose to link MS and use Docker container

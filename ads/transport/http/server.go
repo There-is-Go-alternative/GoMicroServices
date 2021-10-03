@@ -7,6 +7,7 @@ import (
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -28,6 +29,7 @@ type useCase interface {
 // TODO: change database by future Database interface
 func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.Status(netHTTP.StatusOK)

@@ -1,0 +1,162 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "GoMicroServices - Ads"
+  contact:
+    email: "anton.cazalet@epitech.eu"
+host: "localhost:7501"
+tags:
+- name: "Ads"
+  description: "Operations about abs"
+schemes:
+- "http"
+paths:
+  /:
+    get:
+      tags:
+      - "Ads"
+      summary: "Get all ads"
+      description: "Get all the public ads"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Array of ads"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Ad'
+    post:
+      tags:
+      - "Ads"
+      summary: "Create an ad"
+      description: "Returns the created ad"
+      produces:
+      - "application/json"
+      parameters:
+              - in: body
+                name: ad
+                description: The ad to create.
+                schema:
+                  type: object
+                  required:
+                    - title
+                    - description
+                    - price
+                    - picture
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                    picture:
+                      type: string
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Ad"
+        "400":
+          description: "Bad request. One or more fields are incorrect."
+  /{adId}:
+    get:
+      tags:
+      - "Ads"
+      summary: "Find an ad by ID"
+      description: "Returns a single ad"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "adId"
+        in: "path"
+        description: "ID of the ad to return"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Ad"
+        "404":
+          description: "Ad not found"
+    delete:
+      tags:
+      - "Ads"
+      summary: "Delete an ad by ID"
+      description: "Returns a single ad"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "adId"
+        in: "path"
+        description: "ID of the ad to return"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        "200":
+          description: "Successful operation, the ad has been deleted"
+          schema:
+            $ref: "#/definitions/Ad"
+        "404":
+          description: "Ad not found"
+    patch:
+      tags:
+      - "Ads"
+      summary: "Update an ad"
+      description: "Returns the updated ad"
+      produces:
+      - "application/json"
+      parameters:
+              - in: "path"
+                name: "adId"
+                description: "ID of the ad to return"
+                required: true
+                type: "string"
+                format: "uuid"
+              - in: body
+                name: ad
+                description: The ad to update.
+                schema:
+                  type: object
+                  required:
+                    - title
+                    - description
+                    - price
+                    - picture
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                    picture:
+                      type: string
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Ad"
+        "400":
+          description: "Bad request. One or more fields are incorrect."
+definitions:
+  Ad:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+      title:
+        type: "string"
+      description:
+        type: "string"
+      price:
+        type: "number"
+        minimum: 0
+      picture:
+        type: "string"
+        description: "Link a to picture (example: https://cutt.ly/kEHkvfz)"

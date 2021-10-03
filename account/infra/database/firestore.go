@@ -18,39 +18,34 @@ type FirebaseRealTimeDB struct {
 }
 
 var DefaultConf = &FirebaseConfig{
-	CollectionName:        "",
-	ServiceAccountKeyPath: "gomicroservicedatabase-e70d6e1fd7b1.json",
-	BaseConfig: &firebase.Config{
-		//DatabaseURL: "https://gomicroservice-f5b5b-default-rtdb.europe-west1.firebasedatabase.app",
-		DatabaseURL: "https://gomicroservicedatabase-default-rtdb.firebaseio.com/",
-		//AuthOverride: &nilMap,
-	},
+	CollectionName:        "accounts",
+	ServiceAccountKeyPath: "FirebaseCredentials.json",
+	DatabaseURL:           "https://gomicroservicedatabase-default-rtdb.firebaseio.com/",
 }
 
 type FirebaseConfig struct {
 	CollectionName        string
 	ServiceAccountKeyPath string
-	BaseConfig            *firebase.Config
+	DatabaseURL           string
 }
 
-//type Config struct {
-//	AuthOverride     *map[string]interface{} `json:"databaseAuthVariableOverride"`
-//	DatabaseURL      string                  `json:"databaseURL"`
-//	ProjectID        string                  `json:"projectId"`
-//	ServiceAccountID string                  `json:"serviceAccountId"`
-//	StorageBucket    string                  `json:"storageBucket"`
-//}
-
 func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*FirebaseRealTimeDB, error) {
+	// Create firebase config
+	firebaseConf := &firebase.Config{
+		DatabaseURL: conf.DatabaseURL,
+	}
+
 	// Fetch the service account key JSON file contents
 	opt := option.WithCredentialsFile(conf.ServiceAccountKeyPath)
-	opt2 := option.WithEndpoint(conf.BaseConfig.DatabaseURL)
 
-	app, err := firebase.NewApp(ctx, conf.BaseConfig, opt, opt2)
+	// Create the app that allow us to connect to firebase Realtime DB
+	app, err := firebase.NewApp(ctx, firebaseConf, opt)
 	if err != nil {
 		return nil, err
 	}
-	db, err := app.DatabaseWithURL(ctx, conf.BaseConfig.DatabaseURL)
+
+	// Get the Realtime DB client
+	db, err := app.DatabaseWithURL(ctx, firebaseConf.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +97,20 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AccountID) (*do
 }
 
 // SearchBy Retrieve the account that validate the search func passed as param.
-func (m *FirebaseRealTimeDB) SearchBy(ctx context.Context, searchFunc func(*domain.Account) bool) ([]*domain.Account, error) {
-	var accounts []*domain.Account
-	if err := m.DB.NewRef("accounts").Child("email").Get(ctx, &accounts); err != nil {
+func (m *FirebaseRealTimeDB) SearchBy(
+	ctx context.Context, searchFunc func(*domain.Account) bool,
+) ([]*domain.Account, error) {
+	accounts, err := m.All(ctx)
+	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	var matched []*domain.Account
+	for _, a := range accounts {
+		if searchFunc(a) {
+			matched = append(matched, a)
+		}
+	}
+	return matched, nil
 }
 
 // ByEmail Retrieve the info that match "Email".

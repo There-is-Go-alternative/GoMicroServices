@@ -71,17 +71,24 @@ services:
     volumes:
       - ads_go-modules:/go
     restart: always
-
     environment:
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
-
     ports:
       - "7501:7501"
-
     networks:
       - ads
       - account
+
+  swagger-ads:
+    container_name: swagger_ui_ads
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./ads/docs:/usr/share/nginx/html/doc
+    environment:
+      API_URL: "doc/openapi.yml"
+    ports:
+      - "7001:8080"
 
 networks:
   auth:

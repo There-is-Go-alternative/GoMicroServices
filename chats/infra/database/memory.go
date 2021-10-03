@@ -19,7 +19,7 @@ func (d *MockDatabase) CreateMsg(message chats.Message) (chats.Message, error) {
 	return message, nil
 }
 
-func (d *MockDatabase) GetAllChatsOfUser(user_ID string) ([]chats.Chat, error) {
+func (d MockDatabase) GetAllChatsOfUser(user_ID string) ([]chats.Chat, error) {
 	result := []chats.Chat{}
 	for _, current_chat := range d.Chats {
 		for _, elem := range current_chat.UsersIDs {

@@ -32,7 +32,7 @@ func (id MessageID) String() string {
 // ID could be later change by a UUID
 type Message struct {
 	ID           MessageID `json:"id"`
-	ChatID       string    `json:"chat_id"`
+	ChatID       ChatID    `json:"chat_id"`
 	Content      string    `json:"content"`
 	SenderID     string    `json:"sender_id"`
 	CreatedAt    time.Time `json:"created_at"`

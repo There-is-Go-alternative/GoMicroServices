@@ -21,8 +21,8 @@ func (u UseCase) SearchAd() SearchAdCmd {
 		if err != nil {
 			return nil, err
 		}
-		var newAdList []*domain.Ad
 
+		var newAdList []*domain.Ad
 		for _, ad := range adList {
 			if strings.Contains(strings.ToLower(ad.Title), content) {
 				 newAdList = append(newAdList, ad)

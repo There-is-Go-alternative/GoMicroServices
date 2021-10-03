@@ -173,7 +173,3 @@ func (a Handler) SearchAdHandler(cmd usecase.SearchAdCmd) gin.HandlerFunc {
 		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }
-
-//func (a Handler) getAcccount(c *gin.Context) (*domain.Account, error) {
-//
-//}

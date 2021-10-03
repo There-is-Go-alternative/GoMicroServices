@@ -6,8 +6,8 @@ import (
 )
 
 type MockDatabase struct {
-	Chats []chats.Chat
-	Messages  []chats.Message
+	Chats    []chats.Chat
+	Messages []chats.Message
 }
 
 func (d *MockDatabase) CreateChat(chat chats.Chat) (chats.Chat, error) {
@@ -16,7 +16,7 @@ func (d *MockDatabase) CreateChat(chat chats.Chat) (chats.Chat, error) {
 }
 
 func (d *MockDatabase) CreateMsg(message chats.Message) (chats.Message, error) {
-	d.Msgs = append(d.Messages, message)
+	d.Messages = append(d.Messages, message)
 	return message, nil
 }
 

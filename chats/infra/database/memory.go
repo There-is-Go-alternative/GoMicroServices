@@ -1,6 +1,7 @@
 package database
 
 import (
+	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
 )
 
@@ -19,11 +20,11 @@ func (d *MockDatabase) CreateMsg(message chats.Message) (chats.Message, error) {
 	return message, nil
 }
 
-func (d MockDatabase) GetAllChatsOfUser(user_ID string) ([]chats.Chat, error) {
+func (d MockDatabase) GetAllChatsOfUser(user_ID account.AccountID) ([]chats.Chat, error) {
 	result := []chats.Chat{}
 	for _, current_chat := range d.Chats {
-		for _, elem := range current_chat.UsersIDs {
-			if elem == user_ID {
+		for _, current_user_id := range current_chat.UsersIDs {
+			if current_user_id == user_ID {
 				result = append(result, current_chat)
 			}
 		}

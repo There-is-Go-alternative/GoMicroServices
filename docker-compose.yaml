@@ -36,13 +36,37 @@ services:
     networks:
       - auth
       - account
+  ads:
+    container_name: ads_service
+    build:
+      context: ads
+      dockerfile: build/Dockerfile
+      target: runner
+    env_file:
+      - ads/.env
+    volumes:
+      - ads_go-modules:/go
+    restart: always
 
+    environment:
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+
+    ports:
+      - "7501:7501"
+
+    networks:
+      - ads
+      - account
 
 networks:
   auth:
     driver: bridge
   account:
     driver: bridge
+  ads:
+    driver: bridge
 
 volumes:
   account_go-modules: {}
+  ads_go-modules: {}

@@ -73,6 +73,29 @@ func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) erro
 
 // Update a list of domain.Ad to the MemMapStorage
 func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) error {
+	adTransaction := func(ad *domain.Ad) func(transaction firebaseDB.TransactionNode) (interface{}, error) {
+		return func(transaction firebaseDB.TransactionNode) (interface{}, error) {
+			var new_ad domain.Ad
+
+			if err := transaction.Unmarshal(&new_ad); err != nil {
+				return nil, err
+			}
+
+			new_ad = *ad
+			return new_ad, nil
+		}
+	}
+	errs := xerrors.ErrList{}
+	for _, ad := range ads {
+		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
+		if err != nil {
+			errs.Add(err)
+		}
+	}
+
+	if !errs.Nil() {
+		return errs
+	}
 	return nil
 }
 
@@ -83,7 +106,8 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AdID) (*domain.
 	if err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ID)).Get(ctx, &ad); err != nil {
 		return nil, err
 	}
-	if ad.ID.Validate() != nil {
+
+	if ad.ID == "" {
 		return nil, errors.Wrapf(
 			xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: xerrors.AdNotFound}, "ID {%v}", ID,
 		)

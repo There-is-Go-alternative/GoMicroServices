@@ -13,6 +13,7 @@ type database interface {
 	ByID(ctx context.Context, id domain.AdID) (*domain.Ad, error)
 	Create(ctx context.Context, ads ...*domain.Ad) error
 	Remove(ctx context.Context, ads ...*domain.Ad) error
+	Update(ctx context.Context, ad ...*domain.Ad) error
 }
 
 type UseCase struct {

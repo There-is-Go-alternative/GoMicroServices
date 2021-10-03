@@ -72,10 +72,6 @@ func main() {
 		fct  func(context.Context) error
 	}
 	services := []service{
-		//{
-		//	name: "Database",
-		//	fct:  accountStorage.Run,
-		//},
 		{
 			name: "Http Server",
 			fct:  ginServer.Run,

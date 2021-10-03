@@ -9,8 +9,10 @@ import (
 
 // --------------------- GetAllAccounts ------------------------
 
+// GetAllAccountsCmd is a func type that return the logic for retrieving all domain.Account.
 type GetAllAccountsCmd func(ctx context.Context) ([]*domain.Account, error)
 
+// GetAllAccounts is the UseCase handler that retrieve all domain.Account.
 func (u UseCase) GetAllAccounts() GetAllAccountsCmd {
 	return func(ctx context.Context) ([]*domain.Account, error) {
 		u.logger.Info().Msg("Fetching all accounts ...")
@@ -21,15 +23,16 @@ func (u UseCase) GetAllAccounts() GetAllAccountsCmd {
 
 // --------------------- GetAccountByID ------------------------
 
-// GetAccountByIdCmd is a func type that return the logic for retrieving an domain.account by a specified ID.
-type GetAccountByIdCmd func(ctx context.Context, id domain.AccountID) (*domain.Account, error)
+// GetAccountByIDCmd is a func type that return the logic for retrieving a domain.Account by a specified ID.
+type GetAccountByIDCmd func(ctx context.Context, id domain.AccountID) (*domain.Account, error)
 
-// IDInputCmd is used by GetAccountByID UseCase for the retrieval of an account.
-type IDInputCmd struct {
+// GetAccountByIDInput is used by UseCase.GetAccountByID for the retrieval of an account.
+type GetAccountByIDInput struct {
 	Email string `json:"id" binding:"required"`
 }
 
-func (u UseCase) GetAccountById() GetAccountByIdCmd {
+// GetAccountByID is the UseCase handler that retrieve a domain.Account by a domain.AccountID.
+func (u UseCase) GetAccountByID() GetAccountByIDCmd {
 	return func(ctx context.Context, id domain.AccountID) (*domain.Account, error) {
 		// TODO: Add auth service check here
 		u.logger.Info().Msgf("Fetching account by id: %v", id)
@@ -40,21 +43,21 @@ func (u UseCase) GetAccountById() GetAccountByIdCmd {
 
 // --------------------- GetAccountByEmail ------------------------
 
-// GetAccountByEmailCmd is a func type that return the logic for retrieving the Account by a specified Firstname
-// Strict: As the Firstname is unique by account, only one Firstname will
+// GetAccountByEmailCmd is a func type that return the logic for retrieving the Account by a specified Email
+// Strict: As the Email is unique by account, only one domain.Account will be fetched.
 type GetAccountByEmailCmd func(ctx context.Context, email EmailInputCmd) (*domain.Account, error)
 
-// EmailInputCmd is used by GetAccountByEmail UseCase for the retrieval of an account.
+// EmailInputCmd is used by UseCase.GetAccountByEmail for the retrieval of an account.
 type EmailInputCmd struct {
 	Email string `json:"email" binding:"required"`
 }
 
-// GetAccountByEmail is the UseCase handler .
+// GetAccountByEmail is the UseCase handler that retrieve a domain.Account by an Email.
 func (u UseCase) GetAccountByEmail() GetAccountByEmailCmd {
 	return func(ctx context.Context, cmd EmailInputCmd) (*domain.Account, error) {
 		// TODO: Add auth service check here
 		u.logger.Info().Msgf("Fetching account by email: %v", cmd.Email)
-		defer u.logger.Info().Msg("All accounts fetched !")
+		defer u.logger.Info().Msg("AccountByEmail fetched !")
 
 		// Fetching account by Firstname
 		accounts, err := u.DB.ByEmail(ctx, cmd.Email)
@@ -82,7 +85,7 @@ func (u UseCase) GetAccountByEmail() GetAccountByEmailCmd {
 // GetAccountByFirstnameCmd is a func type that return the logic for retrieving all domain.Account by a Firstname
 type GetAccountByFirstnameCmd func(context.Context, FirstnameInputCmd) ([]*domain.Account, error)
 
-// FirstnameInputCmd is used by GetAccountByEmailCmd UseCase for the retrieval of an account.
+// FirstnameInputCmd is used by UseCase.GetAccountByFirstname for the retrieval of an account.
 type FirstnameInputCmd struct {
 	Firstname string `json:"firstname" binding:"required"`
 }
@@ -92,7 +95,7 @@ func (u UseCase) GetAccountByFirstname() GetAccountByFirstnameCmd {
 	return func(ctx context.Context, cmd FirstnameInputCmd) ([]*domain.Account, error) {
 		// TODO: Add auth service check here
 		u.logger.Info().Msgf("Fetching account by Firstname: %v", cmd.Firstname)
-		defer u.logger.Info().Msg("All accounts fetched !")
+		defer u.logger.Info().Msg("All GetAccountByFirstname fetched !")
 
 		// Fetching account by Firstname
 		return u.DB.ByFirstname(ctx, cmd.Firstname)
@@ -104,7 +107,7 @@ func (u UseCase) GetAccountByFirstname() GetAccountByFirstnameCmd {
 // GetAccountByLastnameCmd is a func type that return the logic for retrieving all domain.Account by a Lastname
 type GetAccountByLastnameCmd func(context.Context, LastnameInputCmd) ([]*domain.Account, error)
 
-// LastnameInputCmd is used by GetAccountByEmailCmd UseCase for the retrieval of an account.
+// LastnameInputCmd is used by UseCase.GetAccountByLastname for the retrieval of an account.
 type LastnameInputCmd struct {
 	Lastname string `json:"lastname" binding:"required"`
 }
@@ -114,7 +117,7 @@ func (u UseCase) GetAccountByLastname() GetAccountByLastnameCmd {
 	return func(ctx context.Context, cmd LastnameInputCmd) ([]*domain.Account, error) {
 		// TODO: Add auth service check here
 		u.logger.Info().Msgf("Fetching account by Lastname: %v", cmd.Lastname)
-		defer u.logger.Info().Msg("All accounts fetched !")
+		defer u.logger.Info().Msg("All AccountByLastname fetched !")
 
 		// Fetching account by Lastname
 		return u.DB.ByLastname(ctx, cmd.Lastname)
@@ -123,10 +126,10 @@ func (u UseCase) GetAccountByLastname() GetAccountByLastnameCmd {
 
 // --------------------- GetAccountByFullname ------------------------
 
-// GetAccountByFullnameCmd is a func type that return the logic for retrieving all domain.Account by a Fullname
+// GetAccountByFullnameCmd is a func type that return the logic for retrieving all domain.Account by a Fullname.
 type GetAccountByFullnameCmd func(context.Context, FullnameInputCmd) ([]*domain.Account, error)
 
-// FullnameInputCmd is used by GetAccountByEmailCmd UseCase for the retrieval of an account.
+// FullnameInputCmd is used by UseCase.GetAccountByFullname for the retrieval of a domain.Account.
 type FullnameInputCmd struct {
 	FirstnameInputCmd
 	LastnameInputCmd

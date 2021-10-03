@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
-	"log"
 	"net/mail"
 )
 
@@ -47,38 +46,42 @@ type Account struct {
 	ID        AccountID `json:"id"`
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
-	// Review: Replace by net/email.Address ?
-	Email   string  `json:"email"`
-	Admin   bool    `json:"admin,omitempty"`
-	Address Address `json:"address,omitempty"`
+	Email     string    `json:"email"`
+	Admin     bool      `json:"admin,omitempty"`
+	Address   Address   `json:"address,omitempty"`
 }
 
 // Validate check presence of minimal data required for an Account.
 func (a Account) Validate() error {
 	var err error
-	errs := new(xerrors.ErrList)
+	var errs []error
+
 	if err = a.ID.Validate(); err != nil {
-		log.Println(err)
-		errs.Add(err)
+		errs = append(errs, err)
 	}
 	if err = validateEmail(a.Email); err != nil {
-		log.Println(err)
-		errs.Add(err)
+		errs = append(errs, err)
 	}
-	if errs.Nil() {
-		return nil
-	}
-	return errs
+
+	return xerrors.Concat(errs...)
 }
 
 func (a Account) String() string {
 	// All info are present
-	if a.Firstname != "" && a.Lastname != "" {
+	if a.Firstname != "" && a.Lastname != "" && a.Email != "" {
 		return fmt.Sprintf("%s %s (%s)", a.Firstname, a.Lastname, a.Email)
 	}
 	// User did not fill its lastname
-	if a.Firstname != "" {
+	if a.Firstname != "" && a.Email != "" {
 		return fmt.Sprintf("%s (%s)", a.Firstname, a.Email)
+	}
+	// All info are present
+	if a.Firstname != "" && a.Lastname != "" {
+		return fmt.Sprintf("%s %s", a.Firstname, a.Lastname)
+	}
+	// User did not fill its lastname
+	if a.Firstname != "" {
+		return a.Firstname
 	}
 	// User did not fill its lastname and firstname
 	return a.Email

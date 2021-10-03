@@ -30,7 +30,8 @@ func (e *Error) Unwrap() error {
 }
 
 const (
-	ResourceNotFound = iota
+	InternalError = iota
+	ResourceNotFound
 )
 
 type ErrorWithCode struct {

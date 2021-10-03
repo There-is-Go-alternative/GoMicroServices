@@ -6,9 +6,11 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/gin-gonic/gin v1.7.4
 	github.com/google/uuid v1.3.0
+	github.com/imdario/mergo v0.3.12
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.25.0
 	github.com/sirupsen/logrus v1.8.1
+	google.golang.org/api v0.58.0
 )
 
 require (
@@ -35,7 +37,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/api v0.58.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210921142501-181ce0d877f6 // indirect
 	google.golang.org/grpc v1.40.0 // indirect

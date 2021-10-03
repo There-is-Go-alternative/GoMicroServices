@@ -122,3 +122,23 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 		c.JSON(http.StatusOK, payload)
 	}
 }
+
+// DeleteAdHandler return the handler responsible for searcgubg an ad.
+func (a Handler) SearchAdHandler(cmd usecase.SearchAdCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		content := c.Query("content")
+		if content == "" {
+			a.logger.Error().Msg("SearchAdHandler: param content missing.")
+			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			return
+		}
+
+		payload, err := cmd(c.Request.Context(), usecase.SearchAdInput{Content: content})
+		if err != nil {
+			a.logger.Error().Msgf("Error in GET search ad: %v", err)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, payload)
+	}
+}

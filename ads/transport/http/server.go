@@ -24,6 +24,7 @@ type useCase interface {
 	GetAdById() usecase.GetAdByIdCmd
 	GetAllAds() usecase.GetAllAdsCmd
 	DeleteAd() usecase.DeleteAdCmd
+	SearchAd() usecase.SearchAdCmd
 }
 
 // TODO: change database by future Database interface
@@ -43,6 +44,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		ad.GET("/:id", adHandler.GetAdsByIDHandler(uc.GetAdById()))
 		ad.DELETE("/:id", adHandler.DeleteAdHandler(uc.DeleteAd()))
 		ad.PATCH("/:id", adHandler.UpdateAdHandler(uc.UpdateAd()))
+		ad.GET("/search/", adHandler.SearchAdHandler(uc.SearchAd()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

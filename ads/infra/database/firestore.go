@@ -51,7 +51,7 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 	}, nil
 }
 
-// Create add list of domain.Ad to the MemMapStorage
+// Create add list of domain.Ad to the Firestore realtime database
 func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) error {
 	if len(ads) == 0 {
 		return nil
@@ -71,7 +71,7 @@ func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) erro
 	return nil
 }
 
-// Update a list of domain.Ad to the MemMapStorage
+// Update a list of domain.Ad to the Firestore realtime database
 func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) error {
 	adTransaction := func(ad *domain.Ad) func(transaction firebaseDB.TransactionNode) (interface{}, error) {
 		return func(transaction firebaseDB.TransactionNode) (interface{}, error) {
@@ -115,7 +115,7 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AdID) (*domain.
 	return &ad, nil
 }
 
-// All return all domain.Ad.
+// All return all domain.Ad in the Firestore realtime database
 func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Ad, error) {
 	var ads map[string]*domain.Ad
 	if err := m.DB.NewRef(m.Conf.CollectionName).OrderByChild("id").Get(ctx, &ads); err != nil {
@@ -128,7 +128,7 @@ func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Ad, error) {
 	return lst, nil
 }
 
-// Remove a domain.Ad from the MemMapStorage
+// Remove a domain.Ad from the Firestore realtime database
 func (m *FirebaseRealTimeDB) Remove(ctx context.Context, ads ...*domain.Ad) error {
 	if len(ads) <= 0 {
 		return nil

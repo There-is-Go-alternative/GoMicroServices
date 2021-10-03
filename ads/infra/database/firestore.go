@@ -91,15 +91,6 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AdID) (*domain.
 	return &ad, nil
 }
 
-// SearchBy Retrieve the account that validate the search func passed as param.
-func (m *FirebaseRealTimeDB) SearchBy(ctx context.Context, searchFunc func(*domain.Ad) bool) ([]*domain.Ad, error) {
-	var ads []*domain.Ad
-	if err := m.DB.NewRef("accounts").Child("email").Get(ctx, &ads); err != nil {
-		return nil, err
-	}
-	return nil, nil
-}
-
 // All return all domain.Ad.
 func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Ad, error) {
 	var ads map[string]*domain.Ad

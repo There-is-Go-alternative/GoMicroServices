@@ -31,11 +31,12 @@ func (id MessageID) String() string {
 // Message is a type that represent a message sent by a user to a specific conversation
 // ID could be later change by a UUID
 type Message struct {
-	ID        MessageID `json:"id"`
-	ChatID    string    `json:"chat_id"`
-	Content   string    `json:"content"`
-	SenderID  string    `json:"sender_id"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           MessageID `json:"id"`
+	ChatID       string    `json:"chat_id"`
+	Content      string    `json:"content"`
+	SenderID     string    `json:"sender_id"`
+	CreatedAt    time.Time `json:"created_at"`
+	Attachements [][]byte  `json:"attachements"`
 }
 
 // Validate check presence of minimal data required for an Message.

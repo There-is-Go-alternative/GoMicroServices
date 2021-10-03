@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"fmt"
-
+	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/google/uuid"
 )
 
@@ -30,8 +29,8 @@ func (id ChatID) String() string {
 // Chat is a type that represents a Chat between multiple Accounts
 // ID could be later change by a UUID
 type Chat struct {
-	ID       ChatID   `json:"id"`
-	UsersIDs []string `json:"users_ids"`
+	ID       ChatID              `json:"id"`
+	UsersIDs []account.AccountID `json:"users_ids"`
 }
 
 // Validate check presence of minimal data required for an Chat.
@@ -41,9 +40,9 @@ func (c Chat) Validate() bool {
 
 func (c Chat) String() string {
 	// All info are present
-	final_str := fmt.Sprintf("%s", c.ID)
+	final_str := string(c.ID)
 	for _, elem := range c.UsersIDs {
-		final_str = final_str + " " + elem
+		final_str = final_str + " " + string(elem)
 	}
 	return final_str
 }

@@ -17,3 +17,6 @@
 # Code Editor folder
 .idea
 .vscode
+
+# Firebase config
+*FirebaseCredentials.json

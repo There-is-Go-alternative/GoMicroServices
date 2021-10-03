@@ -46,13 +46,15 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads Database ...")
-	adsStorage := database.NewClientMemMapStorage()
+	adsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Initialising Ads UseCase
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads UseCase ...")
-	// TODO: Change get use case by main usecase
 	adsUseCase := usecase.NewGetUseCase(adsStorage)
 
 	// Initialising Gin Server
@@ -69,10 +71,6 @@ func main() {
 		shutdown func(context.Context) error
 	}
 	services := []service{
-		{
-			name: "Database",
-			fct:  adsStorage.Run,
-		},
 		{
 			name: "Http Server",
 			fct:  ginServer.Run,

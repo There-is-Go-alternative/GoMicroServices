@@ -31,3 +31,13 @@ func (d MockDatabase) GetAllChatsOfUser(user_ID account.AccountID) ([]chats.Chat
 	}
 	return result, nil
 }
+
+func (d MockDatabase) GetAllMessagesOfChat(chat_ID chats.ChatID) ([]chats.Message, error) {
+	result := []chats.Message{}
+	for _, current_message := range d.Messages {
+		if current_message.ChatID == chat_ID {
+			result = append(result, current_message)
+		}
+	}
+	return result, nil
+}

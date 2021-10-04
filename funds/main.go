@@ -12,7 +12,6 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/infra/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/transport/private/http"
-	http2 "github.com/There-is-Go-alternative/GoMicroServices/funds/transport/private/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/usecase"
 	log "github.com/sirupsen/logrus"
 )
@@ -50,7 +49,7 @@ func main() {
 		}
 	}()
 
-	fundsUseCase := usecase.NewUseCase(&http2.AuthHTTP{}, storage)
+	fundsUseCase := usecase.NewUseCase(&http.AuthHTTP{}, storage)
 	ginServer := http.NewHttpServer(fundsUseCase, conf)
 
 	type service struct {

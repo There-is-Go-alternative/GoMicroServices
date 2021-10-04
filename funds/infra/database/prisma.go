@@ -64,9 +64,22 @@ func (p PrismaDB) DeleteById(ctx context.Context, id *domain.FundsID) error {
 }
 
 func (p PrismaDB) All(ctx context.Context) ([]*domain.Funds, error) {
-	list := p.Client.Funds.FindMany()
+	list, err := p.Client.Funds.FindMany().Exec(ctx)
 
-	fmt.Println(list)
+	if err != nil {
+		return nil, err
+	}
 
-	return make([]*domain.Funds, 0), nil
+	var fundsList []*domain.Funds
+
+	for _, element := range list {
+		fundsList = append(fundsList, &domain.Funds{
+			ID:          domain.FundsID(element.ID),
+			UserId:      element.UserID,
+			Balance:     element.Balance,
+			LastUpdated: element.LastUpdated,
+		})
+	}
+
+	return fundsList, nil
 }

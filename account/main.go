@@ -5,6 +5,11 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
 	infraHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/infra/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
@@ -13,10 +18,6 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 var (

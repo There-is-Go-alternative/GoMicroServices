@@ -15,11 +15,12 @@ type CreateAdInput struct {
 	Description string `json:"description" binding:"required"`
 	Price       *uint   `json:"price" binding:"required"`
 	Picture     string `json:"picture" binding:"required"`
+	UserId		string `json:"userid"`
 }
 
 func (u UseCase) CreateAd() CreateAdCmd {
 	return func(ctx context.Context, input CreateAdInput) (*domain.Ad, error) {
-		ad := &domain.Ad{Title: input.Title, Description: input.Description, Price: *input.Price, Picture: input.Picture}
+		ad := &domain.Ad{Title: input.Title, Description: input.Description, Price: input.Price, Picture: input.Picture, UserId: input.UserId}
 		AdID, err := domain.NewAdID()
 		if err != nil {
 			return nil, err

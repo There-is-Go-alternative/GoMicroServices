@@ -35,12 +35,6 @@ func (u UseCase) Create() CreateFundsCmd {
 
 			createErr := u.DB.Create(ctx, *funds)
 
-			fmt.Println("Before return")
-
-			if createErr != nil {
-				fmt.Println("Error there is %v", createErr)
-			}
-
 			return funds, createErr
 		}
 	}

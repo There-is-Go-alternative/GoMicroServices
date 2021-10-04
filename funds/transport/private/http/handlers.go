@@ -31,8 +31,6 @@ func (a Handler) CreateFundsHandler(cmd usecase.CreateFundsCmd) gin.HandlerFunc 
 
 		payload, err := cmd(c.Request.Context(), usecase.CreateFundsInput{UserId: id, Balance: 0})
 
-		a.logger.Debug().Msg(fmt.Sprintf("%v", payload))
-
 		if err != nil {
 			a.logger.Error().Msg(fmt.Sprintf("Error in GET /funds: %s", err))
 			_ = c.AbortWithError(http.StatusInternalServerError, err)

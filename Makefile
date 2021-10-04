@@ -19,7 +19,19 @@ LINT_CMD				= $(LINT_BIN_PATH) run --timeout=1m
 
 .PHONY: compose-build
 compose-build:
-	$(COMPOSE) build
+	$(COMPOSE) build --parallel
+
+.PHONY: compose-run
+compose-run: compose-build
+	$(COMPOSE) up
+
+.PHONY: compose-run-bg
+compose-run-bg: compose-build
+	$(COMPOSE) up -d
+
+.PHONY: compose-run-db
+compose-run-db:
+	$(COMPOSE) up postgres_db
 
 .PHONY: compose-build-test
 compose-build-test:
@@ -71,3 +83,7 @@ compose-clean:
 docker-clean:
 	@echo "y" | docker system prune -a --volumes
 
+.PHONY: compose-clean
+compose-clean:
+	$(COMPOSE) rm -fsv
+>>>>>>> 7fe8292 (add(account): Add prisma & postgres infra implem (WIP).)

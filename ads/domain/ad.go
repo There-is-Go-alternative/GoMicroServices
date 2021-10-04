@@ -32,6 +32,7 @@ type Ad struct {
 	Description string `json:"description"`
 	Price       uint   `json:"price"`
 	Picture     string `json:"picture"`
+	UserId		string `json:"owner_user_id"`
 }
 
 func (a Ad) Validate() bool {

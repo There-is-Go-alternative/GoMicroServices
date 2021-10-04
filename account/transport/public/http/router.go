@@ -2,11 +2,12 @@ package http
 
 import (
 	"fmt"
+	netHTTP "net/http"
+
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	"github.com/gin-gonic/gin"
-	netHTTP "net/http"
 )
 
 type AccountUseCase interface {
@@ -31,9 +32,11 @@ func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Conf
 		account.PUT("/:id", accountHandler.PutAccountHandler(uc.UpdateAccount()))
 		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
 		account.GET("/test", accountHandler.Authorize(), func(c *gin.Context) {
+			uuid, _ := domain.NewAccountID()
 			c.JSON(netHTTP.StatusOK, gin.H{
 				"success": true,
 				"data": domain.Account{
+					ID: *uuid,
 					Firstname: "COUCOU",
 					Lastname:  "ENTHONNE",
 				},

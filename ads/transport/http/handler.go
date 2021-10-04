@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
@@ -88,10 +87,10 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 			})
 			return
 		}
-		//TODO récupérer account id et le passe dans la requête firebase
-		fmt.Printf("%v\n", account)
+
 		var ad usecase.CreateAdInput
 		err = c.BindJSON(&ad)
+		ad.UserId = string(account.ID)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)

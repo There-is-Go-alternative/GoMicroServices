@@ -62,7 +62,7 @@ func (d MockDatabase) GetChat(chat_id string) (chats.Chat, error) {
 
 func (d *MockDatabase) DeleteChat(chat_id string) bool {
 	for index, current_chat := range d.Chats {
-		if current_chat.ID == string(chat_id) {
+		if string(current_chat.ID) == chat_id {
 			d.Chats[index] = d.Chats[len(d.Chats)-1]
 			d.Chats = d.Chats[:len(d.Chats)-1]
 			return true

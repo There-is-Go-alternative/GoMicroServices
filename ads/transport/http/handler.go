@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/transport/api"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
@@ -79,9 +78,8 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		account := api.Authorize(c)
-
 		//TODO fix error
-		if account == "" {
+		if account == nil {
 			//TODO encapsulate function
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success": false,
@@ -89,6 +87,7 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 			})
 			return
 		}
+		//TODO récupérer account id et le passe dans la requête firebase
 		var ad usecase.CreateAdInput
 		err := c.BindJSON(&ad)
 		if err != nil {

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/There-is-Go-alternative/GoMicroServices/account/transport/private/grpc/proto";
+
+service account {
+  rpc Create (AccountRequest) returns (AccountResponse) {}
+  rpc Delete (AccountRequest) returns (AccountResponse) {}
+}
+
+message AccountResponse {
+  string id = 1;
+}
+
+message AccountRequest {
+  string accountId = 1;
+  string email = 2;
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"net/mail"
 	"time"
 )
@@ -107,6 +108,10 @@ type Address struct {
 }
 
 // Validate check presence of minimal data required for an Address.
-func (a Address) Validate() bool {
-	return a.Country != "" && a.City != "" && a.Street != "" && a.StreetNumber < 0
+func (a Address) Validate() error {
+	// TODO: Errlist
+	if a.Country != "" && a.City != "" && a.Street != "" && a.StreetNumber > 0 {
+		return nil
+	}
+	return errors.New("address not good formed")
 }

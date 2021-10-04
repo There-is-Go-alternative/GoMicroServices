@@ -5,6 +5,8 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	db "github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type PrismaDB struct {
@@ -12,13 +14,33 @@ type PrismaDB struct {
 }
 
 // go run github.com/prisma/prisma-client-go db push --schema infra/database/prisma/schema.prisma
+// go run github.com/prisma/prisma-client-go generate --schema infra/database/prisma/schema.prisma
 
 //https://github.com/prisma/prisma-client-go/blob/main/docs/quickstart.md
 
-func NewPrismaDB() *PrismaDB {
-	return &PrismaDB{
+func NewPrismaDB() (*PrismaDB, error) {
+	db := &PrismaDB{
 		Client: db.NewClient(),
 	}
+	if err := db.Client.Prisma.Connect(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func prismaAddressToDomain(pa *db.AddressModel) domain.Address {
+	addr := domain.Address{
+		Country:      pa.Country,
+		State:        pa.State,
+		City:         pa.City,
+		Street:       pa.Street,
+		StreetNumber: pa.StreetNumber,
+	}
+	if comp, ok := pa.Complementary(); ok {
+		addr.Complementary = comp
+	}
+	return addr
 }
 
 func prismaAccountToDomain(pa *db.AccountModel) *domain.Account {
@@ -27,9 +49,10 @@ func prismaAccountToDomain(pa *db.AccountModel) *domain.Account {
 	}
 	getAddress := func() domain.Address {
 		// TODO
-		//if addr, ok := pa.Address(); !ok || addr == nil {
-		//	return domain.Address{}
-		//}
+		if addr, ok := pa.Address(); ok && addr != nil {
+			log.Warn().Msgf("fetching Address for account {%v}: %v", pa.Email, addr)
+			return prismaAddressToDomain(addr)
+		}
 		return domain.Address{}
 	}
 
@@ -55,10 +78,26 @@ func (p PrismaDB) Create(ctx context.Context, accounts ...*domain.Account) error
 			db.Account.Firstname.Set(a.Firstname),
 			db.Account.Lastname.Set(a.Lastname),
 			db.Account.Balance.Set(a.Balance),
-			// TODO:
-			//db.Account.Address.Link(),
 		).Exec(ctx); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, errors.Wrapf(err, "In PrismaDB.Create"))
+		}
+
+		if a.Address.Validate() != nil {
+			log.Warn().Msgf("Address for account {%v} is not valid, skipping ...", a)
+			continue
+		}
+
+		if _, err := p.Client.Address.CreateOne(
+			db.Address.Account.Link(
+				db.Account.ID.Equals(a.ID.String()),
+			),
+			db.Address.Country.Set(a.Address.Country),
+			db.Address.State.Set(a.Address.State),
+			db.Address.City.Set(a.Address.City),
+			db.Address.Street.Set(a.Address.Street),
+			db.Address.StreetNumber.Set(a.Address.StreetNumber),
+		).Exec(ctx); err != nil {
+			errs = append(errs, errors.Wrapf(err, "In PrismaDB.Create"))
 		}
 	}
 	return xerrors.Concat(errs...)
@@ -73,11 +112,16 @@ func (p PrismaDB) ByID(ctx context.Context, ID domain.AccountID) (*domain.Accoun
 }
 
 func (p PrismaDB) SearchBy(ctx context.Context, searchFuncs ...db.AccountWhereParam) ([]*domain.Account, error) {
-	accountModels, err := p.Client.Account.FindMany(searchFuncs...).Exec(ctx)
+	accountModels, err := p.Client.Account.FindMany(
+		searchFuncs...,
+	).With(
+	// TODO: fetch Address, pb in schema ?
+	//db.Account.Address.Fetch()
+	).Exec(ctx)
 	if err != nil {
 		return nil, xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: err}
 	}
-	accounts := make([]*domain.Account, len(accountModels))
+	accounts := make([]*domain.Account, 0, len(accountModels))
 	for _, a := range accountModels {
 		acc := a
 		accounts = append(accounts, prismaAccountToDomain(&acc))
@@ -87,7 +131,9 @@ func (p PrismaDB) SearchBy(ctx context.Context, searchFuncs ...db.AccountWherePa
 
 // ByEmail Retrieve the info that match "Email".
 func (p PrismaDB) ByEmail(ctx context.Context, email string) ([]*domain.Account, error) {
-	return p.SearchBy(ctx, db.Account.Email.Equals(email))
+	return p.SearchBy(ctx,
+		db.Account.Email.Equals(email),
+	)
 }
 
 // ByFirstname Retrieve the info that match "FirstName".
@@ -131,10 +177,11 @@ func (p PrismaDB) Update(ctx context.Context, accounts ...*domain.Account) error
 
 // All return all domain.Account.
 func (p *PrismaDB) All(ctx context.Context) ([]*domain.Account, error) {
+	//return p.SearchBy(ctx)
 	return p.SearchBy(ctx)
 }
 
-// Remove a domain.Account from the MemMapStorage
+// Remove a domain.Account.
 func (p *PrismaDB) Remove(ctx context.Context, accounts ...*domain.Account) error {
 	var errs []error
 	for _, a := range accounts {

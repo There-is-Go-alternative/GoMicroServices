@@ -10,7 +10,7 @@ import (
 
 var accountFixtures = []*domain.Account{
 	{Firstname: "Damien", Lastname: "Bernard", Email: "damien.bernard@epitech.eu", Admin: true,
-		Address: domain.Address{Country: "FR", State: "IDF", City: "Paris", Street: "Bleue", StreetNumber: 27}},
+		Address: domain.Address{Country: "FR", State: "IDF", City: "Paris", Street: "Bleue", StreetNumber: 27, Complementary: "lol"}},
 	{Firstname: "Naoufel", Lastname: "BERRADA", Email: "naoufel.berrada@epitech.eu", Admin: true},
 	{Firstname: "Okil saber", Lastname: "LAKHDARI", Email: "okil-saber.lakhdari@epitech.eu", Admin: true},
 	{Firstname: "Anton", Lastname: "CAZALET", Email: "anton.cazalet@epitech.eu", Admin: true},

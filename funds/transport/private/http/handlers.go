@@ -46,7 +46,14 @@ func (a Handler) CreateFundsHandler(cmd usecase.CreateFundsCmd) gin.HandlerFunc 
 
 func (a Handler) GetAllFundsHandler(cmd usecase.AllCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Status(http.StatusServiceUnavailable)
+		payload, err := cmd(c.Request.Context())
+
+		if err != nil {
+			a.logger.Error().Msg(fmt.Sprintf("Error in GET /funds: %s", err))
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, payload)
 	}
 }
 

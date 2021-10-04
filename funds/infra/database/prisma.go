@@ -27,11 +27,37 @@ func (p PrismaDB) Disconnect() error {
 }
 
 func (p PrismaDB) ByUserId(ctx context.Context, id string) (*domain.Funds, error) {
-	return nil, fmt.Errorf("Unimplemented")
+	fund, err := p.Client.Funds.FindUnique(
+		db.Funds.UserID.Equals(id),
+	).Exec(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Funds{
+		ID:          domain.FundsID(fund.ID),
+		UserId:      fund.UserID,
+		Balance:     fund.Balance,
+		LastUpdated: fund.LastUpdated,
+	}, err
 }
 
 func (p PrismaDB) ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, error) {
-	return nil, fmt.Errorf("Unimplemented")
+	fund, err := p.Client.Funds.FindUnique(
+		db.Funds.ID.Equals(id.String()),
+	).Exec(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Funds{
+		ID:          domain.FundsID(fund.ID),
+		UserId:      fund.UserID,
+		Balance:     fund.Balance,
+		LastUpdated: fund.LastUpdated,
+	}, err
 }
 
 func (p PrismaDB) Increase(ctx context.Context, by int) error {
@@ -56,11 +82,19 @@ func (p PrismaDB) Create(ctx context.Context, f domain.Funds) error {
 }
 
 func (p PrismaDB) DeleteByUserId(ctx context.Context, id string) error {
-	return fmt.Errorf("Unimplemented")
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.UserID.Equals(id),
+	).Delete().Exec(ctx)
+
+	return err
 }
 
 func (p PrismaDB) DeleteById(ctx context.Context, id *domain.FundsID) error {
-	return fmt.Errorf("Unimplemented")
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.ID.Equals(id.String()),
+	).Delete().Exec(ctx)
+
+	return err
 }
 
 func (p PrismaDB) All(ctx context.Context) ([]*domain.Funds, error) {

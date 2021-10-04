@@ -1,16 +1,16 @@
-package database
+package prisma
 
 import (
 	"context"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
-	db "github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma/prisma"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
-type PrismaDB struct {
-	Client *db.PrismaClient
+type DB struct {
+	Client *prismaDB.PrismaClient
 }
 
 // go run github.com/prisma/prisma-client-go db push --schema infra/database/prisma/schema.prisma
@@ -18,9 +18,9 @@ type PrismaDB struct {
 
 //https://github.com/prisma/prisma-client-go/blob/main/docs/quickstart.md
 
-func NewPrismaDB() (*PrismaDB, error) {
-	db := &PrismaDB{
-		Client: db.NewClient(),
+func NewPrismaDB() (*DB, error) {
+	db := &DB{
+		Client: prismaDB.NewClient(),
 	}
 	if err := db.Client.Prisma.Connect(); err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func NewPrismaDB() (*PrismaDB, error) {
 	return db, nil
 }
 
-func prismaAddressToDomain(pa *db.AddressModel) domain.Address {
+func prismaAddressToDomain(pa *prismaDB.AddressModel) domain.Address {
 	addr := domain.Address{
 		Country:      pa.Country,
 		State:        pa.State,
@@ -43,9 +43,9 @@ func prismaAddressToDomain(pa *db.AddressModel) domain.Address {
 	return addr
 }
 
-func prismaAccountToDomain(pa *db.AccountModel) *domain.Account {
+func prismaAccountToDomain(pa *prismaDB.AccountModel) *domain.Account {
 	isAdmin := func() bool {
-		return pa.Admin == db.RoleADMIN
+		return pa.Admin == prismaDB.RoleADMIN
 	}
 	getAddress := func() domain.Address {
 		// TODO
@@ -69,15 +69,15 @@ func prismaAccountToDomain(pa *db.AccountModel) *domain.Account {
 	}
 }
 
-func (p PrismaDB) Create(ctx context.Context, accounts ...*domain.Account) error {
+func (p DB) Create(ctx context.Context, accounts ...*domain.Account) error {
 	var errs []error
 	for _, a := range accounts {
 		if _, err := p.Client.Account.CreateOne(
-			db.Account.ID.Set(a.ID.String()),
-			db.Account.Email.Set(a.Email),
-			db.Account.Firstname.Set(a.Firstname),
-			db.Account.Lastname.Set(a.Lastname),
-			db.Account.Balance.Set(a.Balance),
+			prismaDB.Account.ID.Set(a.ID.String()),
+			prismaDB.Account.Email.Set(a.Email),
+			prismaDB.Account.Firstname.Set(a.Firstname),
+			prismaDB.Account.Lastname.Set(a.Lastname),
+			prismaDB.Account.Balance.Set(a.Balance),
 		).Exec(ctx); err != nil {
 			errs = append(errs, errors.Wrapf(err, "In PrismaDB.Create"))
 		}
@@ -88,14 +88,14 @@ func (p PrismaDB) Create(ctx context.Context, accounts ...*domain.Account) error
 		}
 
 		if _, err := p.Client.Address.CreateOne(
-			db.Address.Account.Link(
-				db.Account.ID.Equals(a.ID.String()),
+			prismaDB.Address.Account.Link(
+				prismaDB.Account.ID.Equals(a.ID.String()),
 			),
-			db.Address.Country.Set(a.Address.Country),
-			db.Address.State.Set(a.Address.State),
-			db.Address.City.Set(a.Address.City),
-			db.Address.Street.Set(a.Address.Street),
-			db.Address.StreetNumber.Set(a.Address.StreetNumber),
+			prismaDB.Address.Country.Set(a.Address.Country),
+			prismaDB.Address.State.Set(a.Address.State),
+			prismaDB.Address.City.Set(a.Address.City),
+			prismaDB.Address.Street.Set(a.Address.Street),
+			prismaDB.Address.StreetNumber.Set(a.Address.StreetNumber),
 		).Exec(ctx); err != nil {
 			errs = append(errs, errors.Wrapf(err, "In PrismaDB.Create"))
 		}
@@ -103,15 +103,15 @@ func (p PrismaDB) Create(ctx context.Context, accounts ...*domain.Account) error
 	return xerrors.Concat(errs...)
 }
 
-func (p PrismaDB) ByID(ctx context.Context, ID domain.AccountID) (*domain.Account, error) {
-	a, err := p.Client.Account.FindUnique(db.Account.ID.Equals(ID.String())).Exec(ctx)
+func (p DB) ByID(ctx context.Context, ID domain.AccountID) (*domain.Account, error) {
+	a, err := p.Client.Account.FindUnique(prismaDB.Account.ID.Equals(ID.String())).Exec(ctx)
 	if err != nil {
 		return nil, xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: err}
 	}
 	return prismaAccountToDomain(a), err
 }
 
-func (p PrismaDB) SearchBy(ctx context.Context, searchFuncs ...db.AccountWhereParam) ([]*domain.Account, error) {
+func (p DB) SearchBy(ctx context.Context, searchFuncs ...prismaDB.AccountWhereParam) ([]*domain.Account, error) {
 	accountModels, err := p.Client.Account.FindMany(
 		searchFuncs...,
 	).With(
@@ -130,32 +130,32 @@ func (p PrismaDB) SearchBy(ctx context.Context, searchFuncs ...db.AccountWherePa
 }
 
 // ByEmail Retrieve the info that match "Email".
-func (p PrismaDB) ByEmail(ctx context.Context, email string) ([]*domain.Account, error) {
+func (p DB) ByEmail(ctx context.Context, email string) ([]*domain.Account, error) {
 	return p.SearchBy(ctx,
-		db.Account.Email.Equals(email),
+		prismaDB.Account.Email.Equals(email),
 	)
 }
 
 // ByFirstname Retrieve the info that match "FirstName".
-func (p PrismaDB) ByFirstname(ctx context.Context, firstname string) ([]*domain.Account, error) {
-	return p.SearchBy(ctx, db.Account.Firstname.Equals(firstname))
+func (p DB) ByFirstname(ctx context.Context, firstname string) ([]*domain.Account, error) {
+	return p.SearchBy(ctx, prismaDB.Account.Firstname.Equals(firstname))
 }
 
 // ByLastname Retrieve the info that match "Lastname".
-func (p PrismaDB) ByLastname(ctx context.Context, lastname string) ([]*domain.Account, error) {
-	return p.SearchBy(ctx, db.Account.Firstname.Equals(lastname))
+func (p DB) ByLastname(ctx context.Context, lastname string) ([]*domain.Account, error) {
+	return p.SearchBy(ctx, prismaDB.Account.Firstname.Equals(lastname))
 }
 
 // ByFullname Retrieve the info that match "Firstname" and "Lastname".
-func (p PrismaDB) ByFullname(ctx context.Context, firstname, lastname string) ([]*domain.Account, error) {
+func (p DB) ByFullname(ctx context.Context, firstname, lastname string) ([]*domain.Account, error) {
 	return p.SearchBy(ctx,
-		db.Account.Firstname.Equals(firstname),
-		db.Account.Lastname.Equals(lastname),
+		prismaDB.Account.Firstname.Equals(firstname),
+		prismaDB.Account.Lastname.Equals(lastname),
 	)
 }
 
 // Update a list of domain.Account to the MemMapStorage
-func (p PrismaDB) Update(ctx context.Context, accounts ...*domain.Account) error {
+func (p DB) Update(ctx context.Context, accounts ...*domain.Account) error {
 	// TODO:
 	return nil
 	//var errs []error
@@ -176,16 +176,16 @@ func (p PrismaDB) Update(ctx context.Context, accounts ...*domain.Account) error
 }
 
 // All return all domain.Account.
-func (p *PrismaDB) All(ctx context.Context) ([]*domain.Account, error) {
+func (p *DB) All(ctx context.Context) ([]*domain.Account, error) {
 	//return p.SearchBy(ctx)
 	return p.SearchBy(ctx)
 }
 
 // Remove a domain.Account.
-func (p *PrismaDB) Remove(ctx context.Context, accounts ...*domain.Account) error {
+func (p *DB) Remove(ctx context.Context, accounts ...*domain.Account) error {
 	var errs []error
 	for _, a := range accounts {
-		_, err := p.Client.Account.FindUnique(db.Account.ID.Equals(a.ID.String())).Delete().Exec(ctx)
+		_, err := p.Client.Account.FindUnique(prismaDB.Account.ID.Equals(a.ID.String())).Delete().Exec(ctx)
 		if err != nil {
 			errs = append(errs, err)
 		}

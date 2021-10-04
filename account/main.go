@@ -1,11 +1,11 @@
-//go:generate go run github.com/prisma/prisma-client-go generate --schema infra/database/schema.prisma
+//go:generate go run github.com/prisma/prisma-client-go generate --schema infra/database/prisma/schema.prisma
 
 package main
 
 import (
 	"context"
 	"flag"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
 	infraHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/infra/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
@@ -53,7 +53,7 @@ func main() {
 	logger.Info().Str("stage", "setup").Msg("Setting up Account Database ...")
 	//accountStorage := database.NewAccountMemMapStorage()
 	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
-	accountStorage, err := database.NewPrismaDB()
+	accountStorage, err := prisma.NewPrismaDB()
 	if err != nil {
 		log.Fatal().Err(err).Msg("When initialis")
 	}

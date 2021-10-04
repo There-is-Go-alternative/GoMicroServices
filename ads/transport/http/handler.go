@@ -4,11 +4,17 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	InternalServerError string = "Internal server error"
+	MissingIDParam string = "Missing id parameter"
+	MissingQueryContent string = "Missing query content"
+	FieldsBadRequest string = "One or more fields are not correct"
 )
 
 type Handler struct {
@@ -19,6 +25,20 @@ func NewAdHandler() *Handler {
 	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
 }
 
+func ResponseError(c *gin.Context, code int, message interface {}) {
+	c.JSON(code, gin.H {
+		"success": false,
+		"message": message,
+	})
+}
+
+func ResponseSuccess(c *gin.Context, code int, message interface {}) {
+	c.JSON(code, gin.H {
+		"success": true,
+		"data": message,
+	})
+}
+
 // GetAdsHandler return the handler responsible for fetching all ads
 func (a Handler) GetAdsHandler(cmd usecase.GetAllAdsCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -26,10 +46,10 @@ func (a Handler) GetAdsHandler(cmd usecase.GetAllAdsCmd) gin.HandlerFunc {
 
 		if err != nil {
 			a.logger.Error().Msg("Error in GET /ads")
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }
 
@@ -39,17 +59,17 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 		id := c.Param("id")
 		if id == "" {
 			a.logger.Error().Msg("GetAdsByIDHandler: param ID missing.")
-			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
 		payload, err := cmd(c.Request.Context(), domain.AdID(id))
 
 		if err != nil {
 			a.logger.Error().Msg("Error in GET by /ads/:id")
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusBadRequest, "No ad found")
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }
 
@@ -60,18 +80,16 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 		err := c.BindJSON(&ad)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
-			// TODO: better error
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
 			return
 		}
 		payload, err := cmd(c.Request.Context(), ad)
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST create ad: %v", err)
-			// TODO: better error
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
-		c.JSON(http.StatusCreated, payload)
+		ResponseSuccess(c, http.StatusCreated, payload)
 	}
 }
 
@@ -81,7 +99,7 @@ func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
 		id := c.Param("id")
 		if id == "" {
 			a.logger.Error().Msg("UpdateAdHandler: param ID missing.")
-			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
 		var ad usecase.UpdateAdInput
@@ -90,16 +108,16 @@ func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
 
 		if err != nil {
 			a.logger.Error().Msgf("User UpdateAdInput invalid: %v", ad)
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
 			return
 		}
 		payload, err := cmd(c.Request.Context(), ad)
 		if err != nil {
 			a.logger.Error().Msgf("Error in PATCH update ad: %v", err)
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
-		c.JSON(http.StatusCreated, payload)
+		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }
 
@@ -109,17 +127,17 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 		id := c.Param("id")
 		if id == "" {
 			a.logger.Error().Msg("DeleteAdHandler: param ID missing.")
-			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
 
 		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST delete ad: %v", err)
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		ResponseSuccess(c, http.StatusAccepted, payload)
 	}
 }
 
@@ -129,16 +147,16 @@ func (a Handler) SearchAdHandler(cmd usecase.SearchAdCmd) gin.HandlerFunc {
 		content := c.Query("content")
 		if content == "" {
 			a.logger.Error().Msg("SearchAdHandler: param content missing.")
-			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			ResponseError(c, http.StatusBadRequest, MissingQueryContent)
 			return
 		}
 
 		payload, err := cmd(c.Request.Context(), usecase.SearchAdInput{Content: content})
 		if err != nil {
 			a.logger.Error().Msgf("Error in GET search ad: %v", err)
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }

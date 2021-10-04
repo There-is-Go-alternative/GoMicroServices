@@ -7,55 +7,53 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/gin-gonic/gin"
 )
 
-func SendRequest(token string) string {
+func SendRequest(token string) (string, error) {
 	request, err := http.NewRequest("GET", "http://localhost:7500/account/test", nil)
 
 	if err != nil {
-		return ""
+		return "", err
 	}
+	//TODO Add "Bearer token"
 	request.Header.Add("Authorization", fmt.Sprintf("%s", token))
 
 	client := &http.Client{}
 	response, err := client.Do(request)
 
 	if err != nil {
-		fmt.Printf("TODO: Erreur")
-		return ""
+		return "", err
 	}
 	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Printf("TODO: Erreur")
-		return ""
+		return "", err
 	}
-	return string([]byte(body))
+	return string([]byte(body)), nil
 }
 
-func Authorize(c *gin.Context) *domain.Account {
+func Authorize(c *gin.Context) (*domain.Account, error) {
 	token := c.Request.Header.Get("Authorization")
 
 	if token == "" {
-		return nil
+		return nil, xerrors.AuthorizationError
 	}
-	//Todo call the account service (fix error)
-	account := SendRequest("0647a8a4-a743-46de-bbc1-a87f8f1e0e43")
 
-	if account == "" {
-		//TODO return error
-		return nil
-	}
-	var new_account_response struct {Data domain.Account `json:"data"`}
-
-	err := json.Unmarshal([]byte(account), &new_account_response)
+	account, err := SendRequest(token)
 
 	if err != nil {
-		//TODO Error
-		return nil
+		return nil, err
 	}
-	return &new_account_response.Data
+
+	var new_account_response struct {Data domain.Account `json:"data"`}
+	err = json.Unmarshal([]byte(account), &new_account_response)
+
+	if err != nil {
+		return nil, err
+	}
+	return &new_account_response.Data, nil
 }

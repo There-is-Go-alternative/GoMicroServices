@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
@@ -77,9 +78,9 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 // CreateAdHandler return the handler responsible for creating an ad.
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		account := api.Authorize(c)
+		account, err := api.Authorize(c)
 		//TODO fix error
-		if account == nil {
+		if err != nil {
 			//TODO encapsulate function
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success": false,
@@ -88,8 +89,9 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 			return
 		}
 		//TODO récupérer account id et le passe dans la requête firebase
+		fmt.Printf("%v\n", account)
 		var ad usecase.CreateAdInput
-		err := c.BindJSON(&ad)
+		err = c.BindJSON(&ad)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)

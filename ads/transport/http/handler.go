@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/transport/api"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -76,6 +78,17 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 // CreateAdHandler return the handler responsible for creating an ad.
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		account := api.Authorize(c)
+
+		//TODO fix error
+		if account == "" {
+			//TODO encapsulate function
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "You need to be logged in",
+			})
+			return
+		}
 		var ad usecase.CreateAdInput
 		err := c.BindJSON(&ad)
 		if err != nil {

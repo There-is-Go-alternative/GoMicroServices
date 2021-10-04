@@ -12,11 +12,15 @@ import (
 )
 
 type Handler struct {
+	APIKey string
 	logger zerolog.Logger
 }
 
-func NewAccountHandler() *Handler {
-	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
+func NewAccountHandler(APIKey string) *Handler {
+	return &Handler{
+		APIKey: APIKey,
+		logger: log.With().Str("service", "Http Handler").Logger(),
+	}
 }
 
 // GetAllAccountsHandler return the handler responsible for fetching all users account
@@ -156,5 +160,21 @@ func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerF
 			return
 		}
 		c.JSON(http.StatusOK, payload)
+	}
+}
+
+func (a Handler) Authorize() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		APIKey := c.GetHeader("Authorization")
+		if APIKey == "" {
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("Auth token missing"))
+			return
+		}
+		if APIKey != a.APIKey {
+			// TODO: Get Real Token
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("APIKey Invalid"))
+			return
+		}
+		// TODO: Get Real Token
 	}
 }

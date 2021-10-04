@@ -32,7 +32,7 @@ func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config) *
 	// Grouping Account routes with url specified in config (I.E: 'account')
 	return &Server{
 		Engine: &netHTTP.Server{
-			Addr:    fmt.Sprintf("%s:%s", conf.Host, conf.Port),
+			Addr:    fmt.Sprintf("%s:%s", conf.Host, conf.HTTPPort),
 			Handler: router,
 		},
 		logger: log.With().Str("service", "HTTP gin server").Logger(),

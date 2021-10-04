@@ -4,12 +4,18 @@ go 1.17
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/google/uuid v1.3.0
+	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
 	github.com/imdario/mergo v0.3.12
+	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
+	github.com/prisma/prisma-client-go v0.11.0
 	github.com/rs/zerolog v1.25.0
+	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/takuoki/gocase v1.0.0
 	google.golang.org/api v0.58.0
 )
 

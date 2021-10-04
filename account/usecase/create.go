@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
+	"time"
 )
 
 // --------------------- CreateAccount ------------------------
@@ -41,6 +42,9 @@ func (u UseCase) CreateAccount() CreateAccountCmd {
 		if err == nil {
 			return nil, fmt.Errorf("account ID (%v) already exist in DB: %v", accountID, duplicate)
 		}
+
+		// Adding createdAt timestamp
+		account.CreatedAt = time.Now()
 
 		// Creating account
 		err = u.DB.Create(ctx, account)

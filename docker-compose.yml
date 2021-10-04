@@ -1,10 +1,32 @@
 version: "3.8"
 
+
 services:
+  postgres_db:
+    container_name: postgres_database
+    image: 'postgres'
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_MULTIPLE_DATABASES: account
+    volumes:
+      - ./pg_init_scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
   account:
     container_name: account_service
-    #    depends_on:
-    #      - ????
+
+    depends_on:
+      - postgres_db
 
     # Build Default Dockerfile in "account" directory.
     build:
@@ -20,6 +42,7 @@ services:
       # Caching go modules for faster builds.
       - account_go-modules:/go
     restart: always
+#    command: "wait-for-it.sh 'postgres_db:5432' && ./account"
 
     environment:
 #      # Port on which backend is running
@@ -36,6 +59,7 @@ services:
     networks:
       - auth
       - account
+
   ads:
     container_name: ads_service
     build:

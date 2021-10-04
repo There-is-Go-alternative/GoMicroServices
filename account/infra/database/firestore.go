@@ -38,13 +38,13 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 	// Fetch the service account key JSON file contents
 	opt := option.WithCredentialsFile(conf.ServiceAccountKeyPath)
 
-	// Create the app that allow us to connect to firebase Realtime DB
+	// Create the app that allow us to connect to firebase Realtime PrismaDB
 	app, err := firebase.NewApp(ctx, firebaseConf, opt)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the Realtime DB client
+	// Get the Realtime PrismaDB client
 	db, err := app.DatabaseWithURL(ctx, firebaseConf.DatabaseURL)
 	if err != nil {
 		return nil, err

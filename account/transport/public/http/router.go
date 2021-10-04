@@ -7,6 +7,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,13 @@ type AccountUseCase interface {
 
 func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Config) {
 	accountHandler := NewAccountHandler(conf.APIKey)
+
+	// Configuring CORS
+	router.Use(cors.Default())
+
+	router.GET("/health", func(c *gin.Context) {
+		c.Status(netHTTP.StatusOK)
+	})
 	// Grouping Account routes with url specified in config (I.E: 'account')
 	account := router.Group(fmt.Sprintf("/%s", conf.AccountEndpoint))
 	{

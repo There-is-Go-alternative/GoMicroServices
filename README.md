@@ -8,7 +8,6 @@
  - `Searching an object in a database based on a subquery string isn't a good idea.` What do you mean ?
  - Authorization ? (I.E: http token) responsibility to fetch in transport layer but check where ?
 
-
 ## TODO
  - Small Dockerfile to build each MS
  - Small Docker Compose to link MS and use Docker container

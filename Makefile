@@ -47,6 +47,12 @@ lint: $(MICRO_SERVICES_DIRS)
   		echo "Microservice {$${ms_dir}} Linted !\n" ; 		\
 	done
 
+.PHONY: account-migration
+account-migration:
+	cd account && go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma
+	cd account && go run github.com/prisma/prisma-client-go generate --schema infra/database/schema.prisma
+
 .PHONY: compose-clean
 compose-clean:
 	$(COMPOSE) rm -fsv
+

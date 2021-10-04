@@ -1,19 +1,63 @@
 package usecase
 
-import "context"
+import (
+	"context"
 
-type IncreaseCmd func(ctx context.Context, by int) error
+	"github.com/There-is-Go-alternative/GoMicroServices/funds/domain"
+)
 
-func (u UseCase) Increase() IncreaseCmd {
-	return func(ctx context.Context, by int) error {
-		return nil
+type IncreaseDecreaseInput struct {
+	By int `json:"by" binding:"required"`
+}
+
+type SetInput struct {
+	NewBalance int `json:"new_balance" binding:"required"`
+}
+
+type IncreaseByUserCmd func(ctx context.Context, id string, input IncreaseDecreaseInput) error
+
+func (u UseCase) IncreaseByUser() IncreaseByUserCmd {
+	return func(ctx context.Context, id string, input IncreaseDecreaseInput) error {
+		return u.DB.IncreaseByUser(ctx, id, input.By)
 	}
 }
 
-type DecreaseCmd func(ctx context.Context, by int) error
+type DecreaseByUserCmd func(ctx context.Context, id string, input IncreaseDecreaseInput) error
+
+func (u UseCase) DecreaseByUser() DecreaseByUserCmd {
+	return func(ctx context.Context, id string, input IncreaseDecreaseInput) error {
+		return u.DB.DecreaseByUser(ctx, id, input.By)
+	}
+}
+
+type SetByUserCmd func(ctx context.Context, id string, input SetInput) error
+
+func (u UseCase) SetByUser() SetByUserCmd {
+	return func(ctx context.Context, id string, input SetInput) error {
+		return u.DB.UpdateByUser(ctx, id, input.NewBalance)
+	}
+}
+
+type IncreaseCmd func(ctx context.Context, id domain.FundsID, input IncreaseDecreaseInput) error
+
+func (u UseCase) Increase() IncreaseCmd {
+	return func(ctx context.Context, id domain.FundsID, input IncreaseDecreaseInput) error {
+		return u.DB.Increase(ctx, &id, input.By)
+	}
+}
+
+type DecreaseCmd func(ctx context.Context, id domain.FundsID, input IncreaseDecreaseInput) error
 
 func (u UseCase) Decrease() DecreaseCmd {
-	return func(ctx context.Context, by int) error {
-		return nil
+	return func(ctx context.Context, id domain.FundsID, input IncreaseDecreaseInput) error {
+		return u.DB.Decrease(ctx, &id, input.By)
+	}
+}
+
+type SetCmd func(ctx context.Context, id domain.FundsID, input SetInput) error
+
+func (u UseCase) Set() SetCmd {
+	return func(ctx context.Context, id domain.FundsID, input SetInput) error {
+		return u.DB.Update(ctx, &id, input.NewBalance)
 	}
 }

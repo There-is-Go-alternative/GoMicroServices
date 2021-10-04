@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/infra/database/db"
@@ -60,12 +59,64 @@ func (p PrismaDB) ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, 
 	}, err
 }
 
-func (p PrismaDB) Increase(ctx context.Context, by int) error {
-	return fmt.Errorf("Unimplemented")
+func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.ID.Equals(id.String()),
+	).Update(
+		db.Funds.Balance.Set(new_balance),
+	).Exec(ctx)
+
+	return err
 }
 
-func (p PrismaDB) Decrease(ctx context.Context, by int) error {
-	return fmt.Errorf("Unimplemented")
+func (p PrismaDB) UpdateByUser(ctx context.Context, id string, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.UserID.Equals(id),
+	).Update(
+		db.Funds.Balance.Set(new_balance),
+	).Exec(ctx)
+
+	return err
+}
+
+func (p PrismaDB) IncreaseByUser(ctx context.Context, id string, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.UserID.Equals(id),
+	).Update(
+		db.Funds.Balance.Increment(new_balance),
+	).Exec(ctx)
+
+	return err
+}
+
+func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.ID.Equals(id.String()),
+	).Update(
+		db.Funds.Balance.Decrement(new_balance),
+	).Exec(ctx)
+
+	return err
+}
+
+func (p PrismaDB) DecreaseByUser(ctx context.Context, id string, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.UserID.Equals(id),
+	).Update(
+		db.Funds.Balance.Decrement(new_balance),
+	).Exec(ctx)
+
+	return err
+}
+
+func (p PrismaDB) Decrease(ctx context.Context, id *domain.FundsID, new_balance int) error {
+	_, err := p.Client.Funds.FindUnique(
+		db.Funds.ID.Equals(id.String()),
+	).Update(
+		db.Funds.Balance.Decrement(new_balance),
+	).Exec(ctx)
+
+	return err
 }
 
 func (p PrismaDB) Create(ctx context.Context, f domain.Funds) error {

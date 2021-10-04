@@ -27,6 +27,10 @@ type useCase interface {
 	DeleteByUserID() usecase.DeleteByUserIDCmd
 	Increase() usecase.IncreaseCmd
 	Decrease() usecase.DecreaseCmd
+	Set() usecase.SetCmd
+	IncreaseByUser() usecase.IncreaseByUserCmd
+	DecreaseByUser() usecase.DecreaseByUserCmd
+	SetByUser() usecase.SetByUserCmd
 }
 
 func NewHttpServer(uc useCase, conf *config.Config) *Server {
@@ -47,8 +51,12 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		account.GET("/user/:id", fundsHandler.GetFundsByUserIDHandler(uc.GetByUserID()))
 		account.DELETE("/:id", fundsHandler.DeleteFundsByIDHandler(uc.DeleteByID()))
 		account.DELETE("/user/:id", fundsHandler.DeleteFundsByUserIDHandler(uc.DeleteByUserID()))
-		account.POST("/i/:id", fundsHandler.IncreaseFundsHandler(uc.Increase()))
-		account.POST("/d/:id", fundsHandler.DecreaseFundsHandler(uc.Decrease()))
+		account.POST("/balance/increase/:id", fundsHandler.IncreaseFundsHandler(uc.Increase()))
+		account.POST("/balance/decrease/:id", fundsHandler.DecreaseFundsHandler(uc.Decrease()))
+		account.POST("/balance/set/:id", fundsHandler.SetFundsHandler(uc.Set()))
+		account.POST("/balance/increase/user/:id", fundsHandler.IncreaseFundsByUserHandler(uc.IncreaseByUser()))
+		account.POST("/balance/decrease/user/:id", fundsHandler.DecreaseFundsByUserHandler(uc.DecreaseByUser()))
+		account.POST("/balance/set/user/:id", fundsHandler.SetFundsByUserHandler(uc.SetByUser()))
 	}
 
 	return &Server{

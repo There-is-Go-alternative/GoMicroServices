@@ -21,29 +21,12 @@ services:
       timeout: 5s
       retries: 5
     restart: always
-    networks:
-      - postgres_database
-#
-#  account_generate:
-#    build:
-#      context: account
-#      dockerfile: build/Dockerfile
-#      target: runner
-#    command: "go run github.com/prisma/prisma-client-go db push --schema account/infra/database/schema.prisma"
-#    volumes:
-#      # Caching go modules for faster builds.
-#      - account_go-modules:/go
-#      # Keeping generated files
-#      - account_go-code:/account_service
-
-
 
   account:
     container_name: account_service
 
     depends_on:
       - postgres_db
-#      - account_generate
 
     # Build Default Dockerfile in "account" directory.
     build:
@@ -58,17 +41,13 @@ services:
 #      - ./logs:/logs
       # Caching go modules for faster builds.
       - account_go-modules:/go
-      # Keeping generated files
-      - account_go-code:/account_service
     restart: always
 #    command: "wait-for-it.sh 'postgres_db:5432' && ./account"
 
     environment:
 #      # Port on which backend is running
 #      HOST: "127.0.0.1"
-      ACCOUNT_HTTP_PORT: ${ACCOUNT_HTTP_PORT}
-      API_KEY: ${API_KEY}
-      DATABASE_URL: ${DATABASE_URL}
+#      PORT: "8000"
       # Directory to puts logs in.
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
@@ -80,7 +59,6 @@ services:
     networks:
       - auth
       - account
-      - postgres_database
 
   ads:
     container_name: ads_service
@@ -93,25 +71,17 @@ services:
     volumes:
       - ads_go-modules:/go
     restart: always
+
     environment:
-      ACCOUNT_URL: "account:${ACCOUNT_HTTP_PORT}"
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
+
     ports:
       - "7501:7501"
+
     networks:
       - ads
       - account
-
-  swagger-ads:
-    container_name: swagger_ui_ads
-    image: swaggerapi/swagger-ui
-    volumes:
-      - ./ads/docs:/usr/share/nginx/html/doc
-    environment:
-      API_URL: "doc/openapi.yml"
-    ports:
-      - "7001:8080"
 
 networks:
   auth:
@@ -120,10 +90,7 @@ networks:
     driver: bridge
   ads:
     driver: bridge
-  postgres_database:
-    driver: bridge
 
 volumes:
   account_go-modules: {}
-  account_go-code: {}
   ads_go-modules: {}

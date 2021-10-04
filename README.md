@@ -6,6 +6,7 @@
  - Use type from domain layer of other microservice ? (I.E: Account in Chat service)
  - Infra ? apart for database, what use ?
  - `Searching an object in a database based on a subquery string isn't a good idea.` What do you mean ?
+ - Authorization ? (I.E: http token) responsibility to fetch in transport layer but check where ?
 
 
 ## TODO

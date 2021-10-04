@@ -17,7 +17,7 @@ LINT_CMD				= $(LINT_BIN_PATH) run --timeout=1m
 
 .PHONY: compose-build
 compose-build:
-	$(COMPOSE) build --parallel
+	$(COMPOSE) build
 
 .PHONY: compose-run
 compose-run: compose-build
@@ -55,4 +55,8 @@ account-migration:
 .PHONY: compose-clean
 compose-clean:
 	$(COMPOSE) rm -fsv
+
+.PHONY: docker-clean
+docker-clean:
+	@echo "y" | docker system prune -a --volumes
 

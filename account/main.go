@@ -4,10 +4,10 @@ import (
 	"context"
 	"flag"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
+	infraHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/infra/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
 	privateHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/private/http"
-	publicHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -62,7 +62,7 @@ func main() {
 
 	// Initialising Gin Server
 	logger.Info().Str("stage", "setup").Msg("Setting up Account Http handler ...")
-	ginServer := publicHTTP.NewHttpServer(accountUseCase, conf)
+	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...

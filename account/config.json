@@ -1,4 +1,6 @@
 {
   "Host": "0.0.0.0",
-  "account_endpoint": "account"
+  "Port": "7500",
+  "account_endpoint": "account",
+  "api_key" : "0647a8a4-a743-46de-bbc1-a87f8f1e0e43"
 }

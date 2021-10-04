@@ -50,8 +50,8 @@ func main() {
 	// Initialising Account Database
 	logger.Info().Str("stage", "setup").Msg("Setting up Account Database ...")
 	//accountStorage := database.NewAccountMemMapStorage()
-	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
-	accountStorage, err := database.NewPrismaDB()
+	accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	//accountStorage, err := database.NewPrismaDB()
 	if err != nil {
 		log.Fatal().Err(err).Msg("When initialis")
 	}

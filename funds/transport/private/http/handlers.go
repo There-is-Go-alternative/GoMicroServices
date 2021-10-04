@@ -139,12 +139,186 @@ func (a Handler) DeleteFundsByUserIDHandler(cmd usecase.DeleteByUserIDCmd) gin.H
 
 func (a Handler) IncreaseFundsHandler(cmd usecase.IncreaseCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Status(http.StatusServiceUnavailable)
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.IncreaseDecreaseInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("IncreaseDecreaseInput invalid: %v", input)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), domain.FundsID(id), input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
 	}
 }
 
 func (a Handler) DecreaseFundsHandler(cmd usecase.DecreaseCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Status(http.StatusServiceUnavailable)
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.IncreaseDecreaseInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("IncreaseDecreaseInput invalid: %v", input)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), domain.FundsID(id), input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
+
+func (a Handler) SetFundsHandler(cmd usecase.SetCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.SetInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("SetInput invalid: %v", input)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), domain.FundsID(id), input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
+
+func (a Handler) IncreaseFundsByUserHandler(cmd usecase.IncreaseByUserCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.IncreaseDecreaseInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("IncreaseDecreaseInput invalid:", err)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), id, input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
+
+func (a Handler) DecreaseFundsByUserHandler(cmd usecase.DecreaseByUserCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.IncreaseDecreaseInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("IncreaseDecreaseInput invalid: %v", input)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), id, input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
+
+func (a Handler) SetFundsByUserHandler(cmd usecase.SetByUserCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		if id == "" {
+			a.logger.Error().Msg("GetFundsByIDHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusNotFound, gin.Error{})
+			return
+		}
+
+		var input usecase.SetInput
+		err := c.BindJSON(&input)
+
+		if err != nil {
+			a.logger.Error().Msgf("SetInput invalid: %v", input)
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		err = cmd(c.Request.Context(), id, input)
+
+		if err != nil {
+			a.logger.Error().Msgf("Internal Server Error", input)
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		c.Status(http.StatusOK)
 	}
 }

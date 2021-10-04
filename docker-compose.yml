@@ -47,7 +47,8 @@ services:
     environment:
 #      # Port on which backend is running
 #      HOST: "127.0.0.1"
-#      PORT: "8000"
+      ACCOUNT_HTTP_PORT: ${ACCOUNT_HTTP_PORT}
+      API_KEY: ${API_KEY}
       # Directory to puts logs in.
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
@@ -73,6 +74,7 @@ services:
     restart: always
 
     environment:
+      ACCOUNT_URL: "account:${ACCOUNT_HTTP_PORT}"
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
 

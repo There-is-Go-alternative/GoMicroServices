@@ -43,7 +43,7 @@ type Message struct {
 
 // Validate check presence of minimal data required for an Message.
 func (m Message) Validate() bool {
-	return m.ID.Validate() && (m.ChatID != "") && (m.Content != "") && (m.SenderID != "")
+	return m.ID.Validate() && m.ChatID != "" && m.Content != "" && m.SenderID != ""
 }
 
 func (m Message) String() string {

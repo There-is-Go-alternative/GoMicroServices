@@ -20,6 +20,10 @@ type Database interface {
 	Remove(ctx context.Context, accounts ...*domain.Account) error
 }
 
+type AuthService interface {
+	ValidateToken(token string) bool
+}
+
 // UseCase handle the business logic
 type UseCase struct {
 	DB     Database
@@ -28,7 +32,7 @@ type UseCase struct {
 
 // NewUseCase return an initialized UseCase, using Database
 // TODO: Complete Doc
-func NewUseCase(db Database) *UseCase {
+func NewUseCase(auth AuthService, db Database) *UseCase {
 	return &UseCase{
 		DB:     db,
 		logger: log.With().Str("service", "UseCase").Logger(),

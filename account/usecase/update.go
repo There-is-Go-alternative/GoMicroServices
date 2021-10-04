@@ -5,6 +5,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/imdario/mergo"
+	"time"
 )
 
 // --------------------- UpdateAccount ------------------------
@@ -14,7 +15,7 @@ type UpdateAccountCmd func(ctx context.Context, input UpdateAccountInput) (*doma
 
 // UpdateAccountInput is used by UseCase.UpdateAccount for the update of a domain.Account.
 type UpdateAccountInput struct {
-	domain.Account `binding:"required"`
+	domain.Account
 }
 
 // UpdateAccount is the UseCase handler that retrieve all domain.Account by a Fullname.
@@ -30,6 +31,9 @@ func (u UseCase) UpdateAccount() UpdateAccountCmd {
 		*a = cmd.Account
 		// TODO: Check Unique fields ??
 
+		// Updating modification timestamp
+		a.UpdatedAt = time.Now()
+
 		if err = u.DB.Update(ctx, a); err != nil {
 			return nil, err
 		}
@@ -44,7 +48,7 @@ type PatchAccountCmd func(ctx context.Context, input PatchAccountInput) (*domain
 
 // PatchAccountInput is used by UseCase.UpdateAccount for the patch of a domain.Account.
 type PatchAccountInput struct {
-	domain.Account `binding:"required"`
+	domain.Account
 }
 
 // PatchAccount is the UseCase handler that retrieve all domain.Account by a Fullname.
@@ -60,6 +64,9 @@ func (u UseCase) PatchAccount() PatchAccountCmd {
 			return nil, xerrors.ErrorWithCode{Code: xerrors.InternalError, Err: err}
 		}
 		// TODO: Check Unique fields ??
+
+		// Updating modification timestamp
+		a.UpdatedAt = time.Now()
 
 		// Updating account in DB
 		if err = u.DB.Update(ctx, a); err != nil {

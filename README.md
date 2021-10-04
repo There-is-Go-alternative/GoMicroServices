@@ -3,6 +3,8 @@
 ## Question for Follow-Up
  - Email must be Unique in DB (contact purposes), responsibility is in usecase or Database ?
  - Update in database, if ID (primary Key) doesn't exist, responsibility to check presence of this ID is in usecase or Database ?
+ - Use type from domain layer of other microservice ? (I.E: Account in Chat service)
+ - Infra ? apart for database, what use ?
 
 ## TODO
  - Small Dockerfile to build each MS

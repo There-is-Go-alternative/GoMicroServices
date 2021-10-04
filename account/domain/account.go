@@ -5,6 +5,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
 	"net/mail"
+	"time"
 )
 
 // AccountID is a pseudo-alias that allow future easy modification of Account.ID
@@ -44,11 +45,14 @@ func validateEmail(email string) error {
 // ID could be later change by a UUID
 type Account struct {
 	ID        AccountID `json:"id"`
+	Email     string    `json:"email"`
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
-	Email     string    `json:"email"`
 	Admin     bool      `json:"admin,omitempty"`
 	Address   Address   `json:"address,omitempty"`
+	Balance   int       `json:"balance"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Validate check presence of minimal data required for an Account.

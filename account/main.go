@@ -6,6 +6,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
+	http2 "github.com/There-is-Go-alternative/GoMicroServices/account/transport/private/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	log "github.com/sirupsen/logrus"
@@ -48,7 +49,8 @@ func main() {
 		"stage": "setup",
 	}).Info("Setting up Account Database ...")
 	//accountStorage := database.NewAccountMemMapStorage()
-	accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	accountStorage := database.NewPrismaDB()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +59,7 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Account UseCase ...")
-	accountUseCase := usecase.NewUseCase(accountStorage)
+	accountUseCase := usecase.NewUseCase(&http2.AuthHTTP{}, accountStorage)
 
 	// Initialising Gin Server
 	log.WithFields(log.Fields{

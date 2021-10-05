@@ -33,30 +33,35 @@ type useCase interface {
 	SetByUser() usecase.SetByUserCmd
 }
 
-func NewHttpServer(uc useCase, conf *config.Config) *Server {
+func NewHttpServer(uc useCase, conf *config.Config, auth *usecase.AuthService) *Server {
 	router := gin.Default()
 
-	// Configuring CORS
 	router.Use(cors.Default())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.Status(netHTTP.StatusOK)
 	})
-	fundsHandler := NewFundsHandler()
-	account := router.Group("/funds")
+	fundsHandler := NewFundsHandler(auth)
+	api := router.Group("/api/v1/")
 	{
-		account.POST("/:id", fundsHandler.CreateFundsHandler(uc.Create()))
-		account.GET("/", fundsHandler.GetAllFundsHandler(uc.All()))
-		account.GET("/:id", fundsHandler.GetFundsByIDHandler(uc.GetByID()))
-		account.GET("/user/:id", fundsHandler.GetFundsByUserIDHandler(uc.GetByUserID()))
-		account.DELETE("/:id", fundsHandler.DeleteFundsByIDHandler(uc.DeleteByID()))
-		account.DELETE("/user/:id", fundsHandler.DeleteFundsByUserIDHandler(uc.DeleteByUserID()))
-		account.POST("/balance/increase/:id", fundsHandler.IncreaseFundsHandler(uc.Increase()))
-		account.POST("/balance/decrease/:id", fundsHandler.DecreaseFundsHandler(uc.Decrease()))
-		account.POST("/balance/set/:id", fundsHandler.SetFundsHandler(uc.Set()))
-		account.POST("/balance/increase/user/:id", fundsHandler.IncreaseFundsByUserHandler(uc.IncreaseByUser()))
-		account.POST("/balance/decrease/user/:id", fundsHandler.DecreaseFundsByUserHandler(uc.DecreaseByUser()))
-		account.POST("/balance/set/user/:id", fundsHandler.SetFundsByUserHandler(uc.SetByUser()))
+		api.Use(fundsHandler.ValidateToken)
+
+		api.POST("/:id", fundsHandler.CreateFundsHandler(uc.Create()))
+		api.GET("/", fundsHandler.GetAllFundsHandler(uc.All()))
+		api.GET("/:id", fundsHandler.GetFundsByIDHandler(uc.GetByID()))
+		api.GET("/user/:id", fundsHandler.GetFundsByUserIDHandler(uc.GetByUserID()))
+		api.DELETE("/:id", fundsHandler.DeleteFundsByIDHandler(uc.DeleteByID()))
+		api.DELETE("/user/:id", fundsHandler.DeleteFundsByUserIDHandler(uc.DeleteByUserID()))
+
+		balance := api.Group("/balance/")
+		{
+			balance.POST("/increase/:id", fundsHandler.IncreaseFundsHandler(uc.Increase()))
+			balance.POST("/decrease/:id", fundsHandler.DecreaseFundsHandler(uc.Decrease()))
+			balance.POST("/set/:id", fundsHandler.SetFundsHandler(uc.Set()))
+			balance.POST("/increase/user/:id", fundsHandler.IncreaseFundsByUserHandler(uc.IncreaseByUser()))
+			balance.POST("/decrease/user/:id", fundsHandler.DecreaseFundsByUserHandler(uc.DecreaseByUser()))
+			balance.POST("/set/user/:id", fundsHandler.SetFundsByUserHandler(uc.SetByUser()))
+		}
 	}
 
 	return &Server{

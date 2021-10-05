@@ -13,10 +13,31 @@ import (
 
 type Handler struct {
 	logger zerolog.Logger
+	auth   usecase.AuthService
 }
 
-func NewFundsHandler() *Handler {
-	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
+func NewFundsHandler(auth *usecase.AuthService) *Handler {
+	return &Handler{logger: log.With().Str("service", "Http Handler").Logger(), auth: *auth}
+}
+
+func (a Handler) ValidateToken(c *gin.Context) {
+	authorization := c.GetHeader("Authorization")
+
+	if authorization == "" {
+		a.logger.Error().Msg("No token")
+		_ = c.AbortWithError(http.StatusNetworkAuthenticationRequired, fmt.Errorf("no token provided in Authorization header"))
+		return
+	}
+
+	err := a.auth.ValidateToken(authorization)
+
+	if err != nil {
+		a.logger.Error().Msg(fmt.Sprintf("Error in GET /funds: %s", err))
+		_ = c.AbortWithError(http.StatusNetworkAuthenticationRequired, err)
+		return
+	}
+
+	c.Next()
 }
 
 func (a Handler) CreateFundsHandler(cmd usecase.CreateFundsCmd) gin.HandlerFunc {

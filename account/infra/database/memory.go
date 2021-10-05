@@ -30,7 +30,7 @@ type MemMapStorage struct {
 	closing chan chan struct{}
 
 	// logger is the service that manage Infos and Warning trace.
-	// TODO: rework doc above
+	// TODO: Change logger
 	logger zerolog.Logger
 	//logger *logrus.Logger
 }

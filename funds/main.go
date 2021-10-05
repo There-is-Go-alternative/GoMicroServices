@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "path to the json config file.")
-	shutdownTimeOut = flag.Int("timeout", 2, "Time out for graceful shutdown, in seconds.")
+	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "<path>")
+	authorizedKeys  = flag.String("authorizedKeys", os.Getenv("CONF_PATH"), "\"[key,]+\"")
+	shutdownTimeOut = flag.Int("timeout", 2, "<time in second>")
 )
 
 func main() {
@@ -32,7 +33,9 @@ func main() {
 		log.Fatalf("problem when parsing config: %v", err)
 	}
 
-	fmt.Println(conf)
+	if *authorizedKeys == "" {
+		log.Fatal("no authotrisation key")
+	}
 
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
@@ -50,7 +53,7 @@ func main() {
 	}()
 
 	fundsUseCase := usecase.NewUseCase(&http.AuthHTTP{
-		AuthorizedKeys: []string{"token"},
+		AuthorizedKeys: strings.Split(*authorizedKeys, ","),
 	}, storage)
 	ginServer := http.NewHttpServer(fundsUseCase, conf, &fundsUseCase.Auth)
 

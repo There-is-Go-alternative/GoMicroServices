@@ -15,8 +15,8 @@ type GetAllAccountsCmd func(ctx context.Context) ([]*domain.Account, error)
 // GetAllAccounts is the UseCase handler that retrieve all domain.Account.
 func (u UseCase) GetAllAccounts() GetAllAccountsCmd {
 	return func(ctx context.Context) ([]*domain.Account, error) {
-		u.logger.Info().Msg("Fetching all accounts ...")
-		defer u.logger.Info().Msg("All accounts fetched !")
+		u.logger.Info("Fetching all accounts ...")
+		defer u.logger.Info("All accounts fetched !")
 		return u.DB.All(ctx)
 	}
 }
@@ -35,8 +35,8 @@ type GetAccountByIDInput struct {
 func (u UseCase) GetAccountByID() GetAccountByIDCmd {
 	return func(ctx context.Context, id domain.AccountID) (*domain.Account, error) {
 		// TODO: Add auth service check here
-		u.logger.Info().Msgf("Fetching account by id: %v", id)
-		defer u.logger.Info().Msg("All accounts fetched !")
+		u.logger.Infof("Fetching account by id: %v", id)
+		defer u.logger.Info("All accounts fetched !")
 		return u.DB.ByID(ctx, id)
 	}
 }
@@ -56,8 +56,8 @@ type EmailInputCmd struct {
 func (u UseCase) GetAccountByEmail() GetAccountByEmailCmd {
 	return func(ctx context.Context, cmd EmailInputCmd) (*domain.Account, error) {
 		// TODO: Add auth service check here
-		u.logger.Info().Msgf("Fetching account by email: %v", cmd.Email)
-		defer u.logger.Info().Msg("AccountByEmail fetched !")
+		u.logger.Infof("Fetching account by email: %v", cmd.Email)
+		defer u.logger.Info("AccountByEmail fetched !")
 
 		// Fetching account by Firstname
 		accounts, err := u.DB.ByEmail(ctx, cmd.Email)
@@ -94,8 +94,8 @@ type FirstnameInputCmd struct {
 func (u UseCase) GetAccountByFirstname() GetAccountByFirstnameCmd {
 	return func(ctx context.Context, cmd FirstnameInputCmd) ([]*domain.Account, error) {
 		// TODO: Add auth service check here
-		u.logger.Info().Msgf("Fetching account by Firstname: %v", cmd.Firstname)
-		defer u.logger.Info().Msg("All GetAccountByFirstname fetched !")
+		u.logger.Infof("Fetching account by Firstname: %v", cmd.Firstname)
+		defer u.logger.Info("All GetAccountByFirstname fetched !")
 
 		// Fetching account by Firstname
 		return u.DB.ByFirstname(ctx, cmd.Firstname)
@@ -116,8 +116,8 @@ type LastnameInputCmd struct {
 func (u UseCase) GetAccountByLastname() GetAccountByLastnameCmd {
 	return func(ctx context.Context, cmd LastnameInputCmd) ([]*domain.Account, error) {
 		// TODO: Add auth service check here
-		u.logger.Info().Msgf("Fetching account by Lastname: %v", cmd.Lastname)
-		defer u.logger.Info().Msg("All AccountByLastname fetched !")
+		u.logger.Infof("Fetching account by Lastname: %v", cmd.Lastname)
+		defer u.logger.Info("All AccountByLastname fetched !")
 
 		// Fetching account by Lastname
 		return u.DB.ByLastname(ctx, cmd.Lastname)
@@ -139,8 +139,8 @@ type FullnameInputCmd struct {
 func (u UseCase) GetAccountByFullname() GetAccountByFullnameCmd {
 	return func(ctx context.Context, cmd FullnameInputCmd) ([]*domain.Account, error) {
 		// TODO: Add auth service check here
-		u.logger.Info().Msgf("Fetching account by Fullname: %v %v", cmd.Firstname, cmd.Lastname)
-		defer u.logger.Info().Msg("All accounts fetched !")
+		u.logger.Infof("Fetching account by Fullname: %v %v", cmd.Firstname, cmd.Lastname)
+		defer u.logger.Info("All accounts fetched !")
 
 		// Fetching account by Fullname
 		return u.DB.ByFullname(ctx, cmd.Firstname, cmd.Lastname)

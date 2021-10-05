@@ -7,17 +7,18 @@ import (
 	transportPublicHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
+	"log"
 	netHTTP "net/http"
 )
 
 type Server struct {
 	Engine *netHTTP.Server
-	logger zerolog.Logger
+	logger *logrus.Entry
 }
 
-func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config) *Server {
+func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config, logger *logrus.Logger) *Server {
+	gin.DefaultWriter = logger.Writer()
 	router := gin.Default()
 
 	// Configuring CORS
@@ -32,15 +33,16 @@ func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config) *
 	// Grouping Account routes with url specified in config (I.E: 'account')
 	return &Server{
 		Engine: &netHTTP.Server{
-			Addr:    fmt.Sprintf("%s:%s", conf.Host, conf.HTTPPort),
-			Handler: router,
+			Addr:     fmt.Sprintf("%s:%s", conf.Host, conf.HTTPPort),
+			Handler:  router,
+			ErrorLog: log.New(logger.Writer(), "", 0),
 		},
-		logger: log.With().Str("service", "HTTP gin server").Logger(),
+		logger: logger.WithFields(logrus.Fields{"service": "HTTP gin server"}),
 	}
 }
 
 func (s Server) Run(ctx context.Context) (err error) {
-	s.logger.Info().Msg("Running gin HTTP server ...")
+	s.logger.Infof("Running gin HTTP server on %v ...", s.Engine.Addr)
 	errc := make(chan error)
 	go func() {
 		errc <- s.Engine.ListenAndServe()
@@ -50,7 +52,7 @@ func (s Server) Run(ctx context.Context) (err error) {
 		return
 	case <-ctx.Done():
 		if err = s.Engine.Shutdown(ctx); err != nil && err != context.Canceled {
-			s.logger.Error().Msgf("Error happened when server forced to shutdown: %v", err)
+			s.logger.Errorf("Error happened when server forced to shutdown: %v", err)
 			return
 		}
 	}

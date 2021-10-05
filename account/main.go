@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"flag"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,56 +17,64 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
 	privateHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/private/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
 	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "path to the json config file.")
 	shutdownTimeOut = flag.Int("timeout", 2, "Time out for graceful shutdown, in seconds.")
 	loadFixture     = flag.Bool("fixtures", false, "Time out for graceful shutdown, in seconds.")
-	noLogColor      = flag.Bool("no-log-color", false, "if the logger should not print with color")
+	logFormatter    = flag.String("log-formatter", "text", "Which formatter the logger must use")
 )
 
 func main() {
 	flag.Parse()
 	if *confPath == "" {
-		log.Fatal().Msg("Config path is empty")
-	}
-	if !*noLogColor {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Fatal("Config path is empty")
 	}
 
-	logger := zerolog.New(log.Logger)
+	logger := log.New()
+
+	switch *logFormatter {
+	case "json":
+		logger.SetFormatter(&log.JSONFormatter{})
+	case "text":
+		break
+	default:
+		log.Fatalf("Log formatter is not one of possible, got: %s", *logFormatter)
+	}
+
+	setupContext := logger.WithFields(log.Fields{"stage": "setup"})
 
 	// Reading config from json file
-	logger.Info().Str("stage", "setup").Msg("Parsing config ...")
-	conf, err := config.ParseConfigFromPath(*confPath)
+	setupContext.Info("Parsing config ...")
+	conf, err := config.NewConfig(*confPath)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("problem when parsing config")
+		setupContext.Fatalf("problem when parsing config: %v", err)
 	}
+	logger.Info(conf)
 
 	// Setup context to be notified when the program receive a signal
-	logger.Info().Str("stage", "setup").Msg("Setting up context ...")
+	setupContext.Info("Setting up context ...")
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
 
 	// Initialising Account Database
-	logger.Info().Str("stage", "setup").Msg("Setting up Account Database ...")
+	setupContext.Info("Setting up Account Database ...")
 	//accountStorage := database.NewAccountMemMapStorage()
 	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
 	accountStorage, err := prisma.NewPrismaDB()
 	if err != nil {
-		log.Fatal().Err(err).Msg("When initialis")
+		setupContext.Fatal("When initialising Acccount storage: %v", err)
 	}
 
 	// Initialising Account UseCase
-	logger.Info().Str("stage", "setup").Msg("Setting up Account UseCase ...")
-	accountUseCase := usecase.NewUseCase(&privateHTTP.AuthHTTP{}, accountStorage)
+	setupContext.Info("Setting up Account UseCase ...")
+	accountUseCase := usecase.NewUseCase(&privateHTTP.AuthHTTP{}, accountStorage, logger)
 
 	// Initialising Gin Server
-	logger.Info().Str("stage", "setup").Msg("Setting up Account Http handler ...")
-	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf)
+	setupContext.Info("Setting up Account Http handler ...")
+	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf, logger)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...
@@ -82,32 +91,31 @@ func main() {
 
 	// Setup an error channel
 	errChan := make(chan error)
+	runnerContext := logger.WithFields(log.Fields{"stage": "setup"})
 
 	// launching each service in goroutine and catching error if any in errChan
 	for _, fct := range services {
 		// Launching the go routine and logging.
 		go func(s service) {
-			logger.Info().Str("stage", "runner").Msgf("Running %s", s.name)
+			runnerContext.Infof("Running %s", s.name)
 			errChan <- s.fct(ctx)
 		}(fct)
 	}
 
 	if *loadFixture {
 		if err = tests.DefaultFixtures(ctx, accountStorage); err != nil {
-			logger.Fatal().Err(err).Msg("Error when loading fixture.")
+			runnerContext.Fatalf("Error when loading fixture: %v", err)
 		}
 	}
 
 	// Waiting for a channel to receive something
 	select {
 	case <-ctx.Done():
-		logger.Info().Str("stage", "runner").Msg("Context Canceled. Shutdown ...")
+		runnerContext.Info("Context Canceled. Shutdown ...")
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
 		return
 	case err := <-errChan:
-		logger.Error().Str("stage", "runner").Err(err).Msg(
-			"An Error happened in a service, shutting down ...",
-		)
+		runnerContext.Errorf("An Error happened in a service, shutting down ... (%v)", err)
 		// Cancel context to shut down blocking services.
 		ctxCancel()
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))

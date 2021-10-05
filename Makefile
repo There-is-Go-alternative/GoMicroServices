@@ -44,18 +44,18 @@ compose-run-test: compose-build-test
 
 .PHONY: go-build
 go-build: $(MICRO_SERVICES_DIRS)
-	@for ms_dir in $^ ; do 																		\
-  		echo "Building {$${ms_dir}} microservice ..." ; 										\
-		cd $(PROJ_DIR)/$${ms_dir} && go build -o $${ms_dir} . && rm $${ms_dir} || exit 1; 		\
-  		echo "Microservice {$${ms_dir}} Built !\n" ; 											\
+	@for ms_dir in $^ ; do 																							\
+  		echo "Building {$${ms_dir}} microservice ..." ; 															\
+		cd $(PROJ_DIR)/$${ms_dir} && go generate ./... && go build -o $${ms_dir} . && rm $${ms_dir} || exit 1; 		\
+  		echo "Microservice {$${ms_dir}} Built !\n" ; 																\
 	done
 
 .PHONY: lint
 lint: $(MICRO_SERVICES_DIRS)
-	@for ms_dir in $^ ; do 									\
-  		echo "Running lint in {$${ms_dir}} ..." ; 			\
-		cd $(PROJ_DIR)/$${ms_dir} && $(LINT_CMD) || exit 1; \
-  		echo "Microservice {$${ms_dir}} Linted !\n" ; 		\
+	@for ms_dir in $^ ; do 										\
+  		echo "Running lint in {$${ms_dir}} ..." ; 				\
+		cd $(PROJ_DIR)/$${ms_dir} &&  $(LINT_CMD) || exit 1; 	\
+  		echo "Microservice {$${ms_dir}} Linted !\n" ; 			\
 	done
 
 .PHONY: account-migration

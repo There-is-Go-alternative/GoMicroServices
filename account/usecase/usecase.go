@@ -30,7 +30,6 @@ type UseCase struct {
 }
 
 // NewUseCase return an initialized UseCase, using Database
-// TODO: Complete Doc
 func NewUseCase(auth AuthService, db Database, logger *log.Logger) *UseCase {
 	return &UseCase{
 		DB:     db,

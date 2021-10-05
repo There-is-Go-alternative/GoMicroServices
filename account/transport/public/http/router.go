@@ -19,7 +19,6 @@ type AccountUseCase interface {
 	UpdateAccount() usecase.UpdateAccountCmd
 }
 
-// TODO: change database by future Database interface
 func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Config) {
 	accountHandler := NewAccountHandler(conf.APIKey)
 	// Grouping Account routes with url specified in config (I.E: 'account')
@@ -36,7 +35,7 @@ func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Conf
 			c.JSON(netHTTP.StatusOK, gin.H{
 				"success": true,
 				"data": domain.Account{
-					ID: *uuid,
+					ID:        *uuid,
 					Firstname: "COUCOU",
 					Lastname:  "ENTHONNE",
 				},
@@ -44,18 +43,3 @@ func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Conf
 		})
 	}
 }
-
-//// TODO: change database by future Database interface
-//func Apply(router *gin.Engine, uc AccountUseCase, conf *config.Config) {
-//	accountHandler := NewAccountHandler()
-//	// Grouping Account routes with url specified in config (I.E: 'account')
-//	account := router.Group(fmt.Sprintf("/%s", conf.AccountEndpoint))
-//	{
-//		account.POST("/", accountHandler.CreateAccountHandler(uc.CreateAccount()))
-//		account.GET("/", accountHandler.GetAllAccountsHandler(uc.GetAllAccounts()))
-//		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountByID()))
-//		account.PATCH("/:id", accountHandler.PatchAccountHandler(uc.PatchAccount()))
-//		account.PUT("/:id", accountHandler.PutAccountHandler(uc.UpdateAccount()))
-//		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
-//	}
-//}

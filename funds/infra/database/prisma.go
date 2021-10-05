@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/funds/infra/database/db"
@@ -39,7 +40,7 @@ func (p PrismaDB) ByUserId(ctx context.Context, id string) (*domain.Funds, error
 		UserId:      fund.UserID,
 		Balance:     fund.Balance,
 		LastUpdated: fund.LastUpdated,
-	}, err
+	}, nil
 }
 
 func (p PrismaDB) ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, error) {
@@ -56,7 +57,7 @@ func (p PrismaDB) ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, 
 		UserId:      fund.UserID,
 		Balance:     fund.Balance,
 		LastUpdated: fund.LastUpdated,
-	}, err
+	}, nil
 }
 
 func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance int) error {
@@ -64,6 +65,7 @@ func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance in
 		db.Funds.ID.Equals(id.String()),
 	).Update(
 		db.Funds.Balance.Set(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -74,6 +76,7 @@ func (p PrismaDB) UpdateByUser(ctx context.Context, id string, new_balance int) 
 		db.Funds.UserID.Equals(id),
 	).Update(
 		db.Funds.Balance.Set(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -84,6 +87,7 @@ func (p PrismaDB) IncreaseByUser(ctx context.Context, id string, new_balance int
 		db.Funds.UserID.Equals(id),
 	).Update(
 		db.Funds.Balance.Increment(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -94,6 +98,7 @@ func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance 
 		db.Funds.ID.Equals(id.String()),
 	).Update(
 		db.Funds.Balance.Decrement(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -104,6 +109,7 @@ func (p PrismaDB) DecreaseByUser(ctx context.Context, id string, new_balance int
 		db.Funds.UserID.Equals(id),
 	).Update(
 		db.Funds.Balance.Decrement(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -114,6 +120,7 @@ func (p PrismaDB) Decrease(ctx context.Context, id *domain.FundsID, new_balance 
 		db.Funds.ID.Equals(id.String()),
 	).Update(
 		db.Funds.Balance.Decrement(new_balance),
+		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 
 	return err
@@ -155,7 +162,7 @@ func (p PrismaDB) All(ctx context.Context) ([]*domain.Funds, error) {
 		return nil, err
 	}
 
-	var fundsList []*domain.Funds
+	fundsList := make([]*domain.Funds, 0, len(list))
 
 	for _, element := range list {
 		fundsList = append(fundsList, &domain.Funds{

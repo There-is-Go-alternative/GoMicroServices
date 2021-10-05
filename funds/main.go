@@ -49,8 +49,10 @@ func main() {
 		}
 	}()
 
-	fundsUseCase := usecase.NewUseCase(&http.AuthHTTP{}, storage)
-	ginServer := http.NewHttpServer(fundsUseCase, conf)
+	fundsUseCase := usecase.NewUseCase(&http.AuthHTTP{
+		AuthorizedKeys: []string{"token"},
+	}, storage)
+	ginServer := http.NewHttpServer(fundsUseCase, conf, &fundsUseCase.Auth)
 
 	type service struct {
 		name string

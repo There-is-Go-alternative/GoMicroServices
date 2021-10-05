@@ -24,17 +24,19 @@ type Database interface {
 }
 
 type AuthService interface {
-	ValidateToken(token string) bool
+	ValidateToken(token string) error
 }
 
 type UseCase struct {
 	DB     Database
 	logger zerolog.Logger
+	Auth   AuthService
 }
 
 func NewUseCase(auth AuthService, db Database) *UseCase {
 	return &UseCase{
 		DB:     db,
 		logger: log.With().Str("service", "UseCase").Logger(),
+		Auth:   auth,
 	}
 }

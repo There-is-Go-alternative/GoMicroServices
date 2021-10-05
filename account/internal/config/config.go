@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+const (
+	HTTPPortEnvVar = "HTTP_PORT"
+	APIKeyEnvVar   = "API_KEY"
+)
+
 type Config struct {
 	Host            string `json:"host,omitempty"`
 	HTTPPort        string `json:"port,omitempty"`
@@ -34,16 +39,16 @@ var defaults = []struct {
 	{
 		fallback: func(c *Config) bool { return c.HTTPPort == "" },
 		opt: func(c *Config) error {
-			if apiKey := os.Getenv("ACCOUNT_HTTP_PORT"); apiKey == "" {
+			if c.HTTPPort = os.Getenv(HTTPPortEnvVar); c.HTTPPort == "" {
 				return errors.Wrapf(xerrors.Config, "Port not found in config or env")
 			}
 			return nil
 		},
 	},
 	{
-		fallback: func(c *Config) bool { return c.HTTPPort == "" },
+		fallback: func(c *Config) bool { return c.APIKey == "" },
 		opt: func(c *Config) error {
-			if apiKey := os.Getenv("API_KEY"); apiKey == "" {
+			if c.APIKey = os.Getenv(APIKeyEnvVar); c.APIKey == "" {
 				return errors.Wrapf(xerrors.Config, "API_KEY not found in config or env")
 			}
 			return nil
@@ -63,15 +68,16 @@ func applyDefaults(c *Config) error {
 	return nil
 }
 
-func NewConfig(path string) (conf *Config, err error) {
-	err = utils.DecodeJSONFromFile(path, &conf)
-	if !errors.Is(err, &os.PathError{}) {
+func NewConfig(path string) (*Config, error) {
+	var conf Config
+	err := utils.DecodeJSONFromFile(path, &conf)
+	if err != nil && !errors.Is(err, &os.PathError{}) {
 		return nil, err
 	}
 	if err = conf.Apply(applyDefaults); err != nil {
 		return nil, err
 	}
-	return
+	return &conf, nil
 }
 
 func ParseConfigFromPath(path string) (conf *Config, err error) {

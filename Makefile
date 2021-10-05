@@ -1,7 +1,9 @@
 PROJ_DIR				:= $(realpath $(CURDIR))
 
-# Commands
+# Compose
 COMPOSE					:= docker-compose
+COMPOSE_COMMON_FILE		:= docker-compose.yml
+COMPOSE_TEST_FILE		:= docker-compose.test.yml
 
 # Create the list of directories for micro services, separated by a space (I.E: 'account auth messages')
 MICRO_SERVICES_DIRS		= account ads
@@ -17,7 +19,11 @@ LINT_CMD				= $(LINT_BIN_PATH) run --timeout=1m
 
 .PHONY: compose-build
 compose-build:
-	$(COMPOSE) build --parallel
+	$(COMPOSE) build
+
+.PHONY: compose-build-test
+compose-build-test:
+	$(COMPOSE) -f $(COMPOSE_COMMON_FILE) -f $(COMPOSE_TEST_FILE) build
 
 .PHONY: compose-run
 compose-run: compose-build
@@ -31,17 +37,10 @@ compose-run-bg: compose-build
 compose-run-db:
 	$(COMPOSE) up postgres_db
 
-.PHONY: compose-run
-compose-run: compose-build
+.PHONY: compose-run-test
+compose-run-test: compose-build-test
 	$(COMPOSE) up
 
-.PHONY: compose-run-bg
-compose-run-bg: compose-build
-	$(COMPOSE) up -d
-
-.PHONY: compose-run-db
-compose-run-db:
-	$(COMPOSE) up postgres_db
 
 .PHONY: go-build
 go-build: $(MICRO_SERVICES_DIRS)

@@ -3,8 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // Database is an interface that represent all possible actions that can be performed on a domain.Account DB.
@@ -27,14 +26,14 @@ type AuthService interface {
 // UseCase handle the business logic
 type UseCase struct {
 	DB     Database
-	logger zerolog.Logger
+	logger *log.Logger
 }
 
 // NewUseCase return an initialized UseCase, using Database
 // TODO: Complete Doc
-func NewUseCase(auth AuthService, db Database) *UseCase {
+func NewUseCase(auth AuthService, db Database, logger *log.Logger) *UseCase {
 	return &UseCase{
 		DB:     db,
-		logger: log.With().Str("service", "UseCase").Logger(),
+		logger: logger.WithField("service", "UseCase").Logger,
 	}
 }

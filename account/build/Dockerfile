@@ -18,6 +18,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 #RUN go mod vendor
 
+# https://github.com/prisma/prisma-client-go/blob/main/docs/deploy.md
 # prefetch the binaries, so that they will be cached and not downloaded on each change
 RUN go run github.com/prisma/prisma-client-go prefetch
 
@@ -29,12 +30,6 @@ COPY . .
 # or, if you use go generate to run the generator, use the following line instead
 RUN go generate ./...
 
-
-#
-#FROM setuper as builder
-#
-## Set the current working directory inside the container
-#WORKDIR /account_service
 
 # Build binary
 RUN go build -o account .
@@ -49,4 +44,7 @@ WORKDIR /account_service
 # Copy Built binary
 COPY --from=builder /account_service/account .
 
-CMD ./account
+# ARG is only accesible at build, so put in env
+ENV BIN_ARGS ""
+
+CMD ./account $BIN_ARGS

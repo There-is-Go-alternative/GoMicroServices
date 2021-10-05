@@ -14,6 +14,7 @@ require (
 	github.com/prisma/prisma-client-go v0.11.0
 	github.com/rs/zerolog v1.25.0
 	github.com/shopspring/decimal v1.2.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/takuoki/gocase v1.0.0
 	google.golang.org/api v0.58.0
 )

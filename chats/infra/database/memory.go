@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
 )
@@ -15,7 +17,7 @@ func (d *MockDatabase) CreateChat(chat chats.Chat) (chats.Chat, error) {
 	return chat, nil
 }
 
-func (d *MockDatabase) CreateMsg(message chats.Message) (chats.Message, error) {
+func (d *MockDatabase) CreateMessage(message chats.Message) (chats.Message, error) {
 	d.Messages = append(d.Messages, message)
 	return message, nil
 }
@@ -42,22 +44,22 @@ func (d MockDatabase) GetAllMessagesOfChat(chat_ID chats.ChatID) ([]chats.Messag
 	return result, nil
 }
 
-func (d MockDatabase) GetMessage(message_id string) (chats.Message, error) {
+func (d MockDatabase) GetMessage(message_id string) (*chats.Message, error) {
 	for _, current_message := range d.Messages {
-		if current_message.ID == string(message_id) {
-			return current_message
+		if string(current_message.ID) == message_id {
+			return &current_message, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("message not found with ID: %v", message_id)
 }
 
-func (d MockDatabase) GetChat(chat_id string) (chats.Chat, error) {
+func (d MockDatabase) GetChat(chat_id string) (*chats.Chat, error) {
 	for _, current_chat := range d.Chats {
-		if current_chat.ID == string(chat_id) {
-			return current_chat
+		if string(current_chat.ID) == chat_id {
+			return &current_chat, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("chat not found with ID: %v", chat_id)
 }
 
 func (d *MockDatabase) DeleteChat(chat_id string) bool {
@@ -73,7 +75,7 @@ func (d *MockDatabase) DeleteChat(chat_id string) bool {
 
 func (d *MockDatabase) DeleteMessage(message_id string) bool {
 	for index, current_message := range d.Messages {
-		if current_message.ID == string(message_id) {
+		if string(current_message.ID) == message_id {
 			d.Messages[index] = d.Messages[len(d.Messages)-1]
 			d.Messages = d.Messages[:len(d.Messages)-1]
 			return true

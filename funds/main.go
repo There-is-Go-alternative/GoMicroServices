@@ -18,7 +18,7 @@ import (
 
 var (
 	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "<path>")
-	authorizedKeys  = flag.String("authorizedKeys", os.Getenv("CONF_PATH"), "\"[key,]+\"")
+	authorizedKeys  = flag.String("authorizedKeys", os.Getenv("AUTHORIZED_KEYS"), "\"[key,]+\"")
 	shutdownTimeOut = flag.Int("timeout", 2, "<time in second>")
 )
 

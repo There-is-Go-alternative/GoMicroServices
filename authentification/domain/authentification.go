@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-<<<<<<< HEAD
 type conf struct {
 	SecretKey []byte
 	TokenExp  time.Time
@@ -22,9 +21,6 @@ var defaultConf = &conf{
 	TokenExp:  time.Now().Add(5 * time.Hour),
 	LoginExp:  100 * time.Second,
 }
-=======
-var SecretKey = []byte(os.Getenv("SECRET_KEY"))
->>>>>>> a6a6ba5 (service(add): authentification domain with the according structures and functions)
 
 type Token struct {
 	Token string `json:"token"`

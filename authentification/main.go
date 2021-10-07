@@ -6,6 +6,7 @@ import (
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/transport/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/authentification/usecase"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -15,13 +16,13 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	collection, err := database.GetMongoDbCollection(client, os.Getenv("MONGO_DB"), os.Getenv("MONGO_COLLECTION"))
+	db, err := database.GetMongoDbCollection(client, os.Getenv("MONGO_DB"), os.Getenv("MONGO_COLLECTION"))
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-
-	server := http.NewHttpServer(collection)
+	authUseCase := usecase.NewUseCase(db)
+	server := http.NewHttpServer(authUseCase)
 	errc := make(chan error)
 	go func() {
 		errc <- server.Listen(os.Getenv("PORT"))

@@ -4,9 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/There-is-Go-alternative/GoMicroServices/authentification/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type LoginDTO struct {
@@ -14,16 +12,12 @@ type LoginDTO struct {
 	Password string `json:"password"`
 }
 
-type authUseCase struct {
-	db database.Database
-}
-
 type LoginProto func(ctx context.Context, input LoginDTO) (*domain.Token, error)
 
-func Login(collection *mongo.Collection) LoginProto {
+func (u UseCase) Login() LoginProto {
 	return func(ctx context.Context, input LoginDTO) (*domain.Token, error) {
 		var auth domain.Auth
-		auth, err := database.FindByEmail(ctx, input.Email, collection)
+		auth, err := u.DB.FindByEmail(ctx, input.Email)
 		if err != nil {
 			log.Println("Email or Password are incorrect")
 			return nil, err

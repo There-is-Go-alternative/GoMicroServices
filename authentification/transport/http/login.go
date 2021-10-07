@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"log"
-
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/usecase"
 	"github.com/gofiber/fiber"
 )
@@ -19,14 +17,12 @@ func LoginHandler(cmd usecase.LoginProto) fiber.Handler {
 		err := c.BodyParser(&dto)
 		defer cancel()
 		if err != nil {
-			log.Printf("LoginInput invalid: %v\n", dto)
 			c.Status(http.StatusBadRequest).JSON(err)
 			return
 		}
 
 		payload, err := cmd(ctx, dto)
 		if err != nil {
-			log.Printf("POST error login: %v\n", err)
 			c.Status(http.StatusNotFound).JSON(err)
 			return
 		}

@@ -3,13 +3,16 @@ package http
 import (
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/usecase"
 	"github.com/gofiber/fiber"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewHttpServer(collection *mongo.Collection) *fiber.App {
+type UseCase interface {
+	Login() usecase.LoginProto
+}
+
+func NewHttpServer(u UseCase) *fiber.App {
 	app := fiber.New()
 
-	app.Post("/login", LoginHandler(usecase.Login(collection)))
+	app.Post("/login", LoginHandler(u.Login()))
 
 	return app
 }

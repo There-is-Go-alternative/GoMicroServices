@@ -13,17 +13,17 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type Database interface {
-	FindByEmail(context.Context, string) (domain.Auth, error)
-}
-
 type MongoDB struct {
 	collection *mongo.Collection
+	client     *mongo.Client
 }
 
-func GetMongoDbCollection(client *mongo.Client, DbName string, CollectionName string) (*mongo.Collection, error) {
+func GetMongoDbCollection(client *mongo.Client, DbName string, CollectionName string) (*MongoDB, error) {
 	collection := client.Database(DbName).Collection(CollectionName)
-	return collection, nil
+	return &MongoDB{
+		collection: collection,
+		client:     client,
+	}, nil
 }
 
 func GetMongoDbConnection() (*mongo.Client, error) {
@@ -41,9 +41,9 @@ func GetMongoDbConnection() (*mongo.Client, error) {
 	return client, nil
 }
 
-func FindByEmail(ctx context.Context, email string, collection *mongo.Collection) (domain.Auth, error) {
+func (db *MongoDB) FindByEmail(ctx context.Context, email string) (domain.Auth, error) {
 	var auth domain.Auth
-	err := collection.FindOne(ctx, bson.M{"email": email}).Decode(&auth)
+	err := db.collection.FindOne(ctx, bson.M{"email": email}).Decode(&auth)
 	if err != nil {
 		log.Println(err)
 		return domain.Auth{}, err

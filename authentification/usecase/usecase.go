@@ -10,12 +10,9 @@ import (
 
 // Database is an interface that represent all possible actions that can be performed on a domain.Account DB.
 
-type AuthUseCase interface {
-	Login(ctx context.Context, input LoginDTO) (*domain.Token, error)
-}
-
 type Database interface {
 	FindByEmail(context.Context, string) (domain.Auth, error)
+	FindByID(context.Context, string) (domain.Auth, error)
 }
 
 type UseCase struct {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/database"
@@ -11,14 +10,11 @@ import (
 )
 
 func main() {
-	client, err := database.GetMongoDbConnection()
+	db, err := database.NewConnection(
+		os.Getenv("MONGO_DB"),
+		os.Getenv("MONGO_COLLECTION"),
+		os.Getenv("MONGO_URI"))
 	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	db, err := database.GetMongoDbCollection(client, os.Getenv("MONGO_DB"), os.Getenv("MONGO_COLLECTION"))
-	if err != nil {
-		log.Fatal(err)
 		return
 	}
 	authUseCase := usecase.NewUseCase(db)
@@ -29,6 +25,5 @@ func main() {
 	}()
 	err = <-errc
 	if err != nil {
-		log.Fatal(err)
 	}
 }

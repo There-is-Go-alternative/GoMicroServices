@@ -75,7 +75,7 @@ func VerifyToken(tokenStr string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("token is invalid")
+		return "", fmt.Errorf("Invalid token")
 	}
 
 	return claims.UserID, nil

@@ -1,22 +1,30 @@
+//go:generate go run github.com/prisma/prisma-client-go generate --schema infra/database/prisma/schema.prisma
+
 package main
 
 import (
 	"context"
 	"flag"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
+	infraHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/infra/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
+	privateHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/private/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
 	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "path to the json config file.")
 	shutdownTimeOut = flag.Int("timeout", 2, "Time out for graceful shutdown, in seconds.")
+	loadFixture     = flag.Bool("fixtures", false, "Time out for graceful shutdown, in seconds.")
+	logFormatter    = flag.String("log-formatter", "text", "Which formatter the logger must use")
 )
 
 func main() {
@@ -25,40 +33,48 @@ func main() {
 		log.Fatal("Config path is empty")
 	}
 
-	// Reading config from json file
-	log.WithFields(log.Fields{
-		"stage": "setup",
-	}).Info("Parsing config ...")
-	conf, err := config.ParseConfigFromPath(*confPath)
-	if err != nil {
-		log.Fatalf("probleme when parsing config: %v", err)
+	logger := log.New()
+
+	switch *logFormatter {
+	case "json":
+		logger.SetFormatter(&log.JSONFormatter{})
+	case "text":
+		break
+	default:
+		log.Fatalf("Log formatter is not one of possible, got: %s", *logFormatter)
 	}
 
+	setupContext := logger.WithFields(log.Fields{"stage": "setup"})
+
+	// Reading config from json file
+	setupContext.Info("Parsing config ...")
+	conf, err := config.NewConfig(*confPath)
+	if err != nil {
+		setupContext.Fatalf("problem when parsing config: %v", err)
+	}
+	logger.Info(conf)
+
 	// Setup context to be notified when the program receive a signal
-	log.WithFields(log.Fields{
-		"stage": "setup",
-	}).Info("Setting up context ...")
+	setupContext.Info("Setting up context ...")
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
 
 	// Initialising Account Database
-	log.WithFields(log.Fields{
-		"stage": "setup",
-	}).Info("Setting up Account Database ...")
-	accountStorage := database.NewAccountMemMapStorage()
+	setupContext.Info("Setting up Account Database ...")
+	//accountStorage := database.NewAccountMemMapStorage()
+	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	accountStorage, err := prisma.NewPrismaDB()
+	if err != nil {
+		setupContext.Fatal("When initialising Acccount storage: %v", err)
+	}
 
 	// Initialising Account UseCase
-	log.WithFields(log.Fields{
-		"stage": "setup",
-	}).Info("Setting up Account UseCase ...")
-	// TODO: Change get use case by main usecase
-	accountUseCase := usecase.NewUseCase(accountStorage)
+	setupContext.Info("Setting up Account UseCase ...")
+	accountUseCase := usecase.NewUseCase(&privateHTTP.AuthHTTP{}, accountStorage, logger)
 
 	// Initialising Gin Server
-	log.WithFields(log.Fields{
-		"stage": "setup",
-	}).Info("Setting up Account Http handler ...")
-	ginServer := http.NewHttpServer(accountUseCase, conf)
+	setupContext.Info("Setting up Account Http handler ...")
+	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf, logger)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...
@@ -68,10 +84,6 @@ func main() {
 	}
 	services := []service{
 		{
-			name: "Database",
-			fct:  accountStorage.Run,
-		},
-		{
 			name: "Http Server",
 			fct:  ginServer.Run,
 		},
@@ -79,30 +91,31 @@ func main() {
 
 	// Setup an error channel
 	errChan := make(chan error)
+	runnerContext := logger.WithFields(log.Fields{"stage": "setup"})
 
 	// launching each service in goroutine and catching error if any in errChan
 	for _, fct := range services {
 		// Launching the go routine and logging.
 		go func(s service) {
-			log.WithFields(log.Fields{
-				"stage": "runner",
-			}).Infof("Running %s", s.name)
+			runnerContext.Infof("Running %s", s.name)
 			errChan <- s.fct(ctx)
 		}(fct)
+	}
+
+	if *loadFixture {
+		if err = tests.DefaultFixtures(ctx, accountStorage); err != nil {
+			runnerContext.Fatalf("Error when loading fixture: %v", err)
+		}
 	}
 
 	// Waiting for a channel to receive something
 	select {
 	case <-ctx.Done():
-		log.WithFields(log.Fields{
-			"stage": "runner",
-		}).Info("Context Canceled. Shutdown ...")
+		runnerContext.Info("Context Canceled. Shutdown ...")
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
 		return
 	case err := <-errChan:
-		log.WithFields(log.Fields{
-			"stage": "runner",
-		}).Errorf("An Error happend in a service: %s", err)
+		runnerContext.Errorf("An Error happened in a service, shutting down ... (%v)", err)
 		// Cancel context to shut down blocking services.
 		ctxCancel()
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))

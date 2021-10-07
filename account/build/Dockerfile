@@ -1,6 +1,6 @@
 #######################################################################################################################
 # Start from golang base image
-FROM golang:1.17-alpine AS builder
+FROM golang:1.17 AS builder
 
 # Add Image info
 LABEL name='Golang 1.17 (alpine) Image'
@@ -18,9 +18,20 @@ COPY go.mod go.sum ./
 RUN go mod download
 #RUN go mod vendor
 
+# https://github.com/prisma/prisma-client-go/blob/main/docs/deploy.md
+# prefetch the binaries, so that they will be cached and not downloaded on each change
+RUN go run github.com/prisma/prisma-client-go prefetch
+
 # Copy the source from the current directory to the working Directory inside the container
 COPY . .
 
+# generate the Prisma Client Go client
+#RUN go run github.com/prisma/prisma-client-go generate --schema infra/database/schema.prisma
+# or, if you use go generate to run the generator, use the following line instead
+RUN go generate ./...
+
+
+# Build binary
 RUN go build -o account .
 
 #######################################################################################################################
@@ -33,4 +44,7 @@ WORKDIR /account_service
 # Copy Built binary
 COPY --from=builder /account_service/account .
 
-CMD ./account
+# ARG is only accesible at build, so put in env
+ENV BIN_ARGS ""
+
+CMD ./account $BIN_ARGS

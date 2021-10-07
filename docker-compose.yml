@@ -1,0 +1,127 @@
+version: "3.8"
+
+
+services:
+  postgres_db:
+    container_name: postgres_database
+    image: 'postgres'
+    expose:
+      - "${POSTGRES_PORT}"
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_USER}"
+      POSTGRES_USER: "${POSTGRES_PASSWORD}"
+      POSTGRES_MULTIPLE_DATABASES: account
+    volumes:
+      - ./pg_init_scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - postgres_db
+
+  account_prisma_migration:
+    build:
+      context: account
+      dockerfile: build/Dockerfile
+      target: builder
+    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/prisma/schema.prisma"
+    depends_on:
+      - postgres_db
+    environment:
+      DATABASE_URL: ${POSTGRES_URL}
+    networks:
+      - postgres_db
+
+  account:
+    container_name: account_service
+
+    depends_on:
+      - account_prisma_migration
+      - postgres_db
+
+    # Build Default Dockerfile in "account" directory.
+    build:
+      context: account
+      dockerfile: build/Dockerfile
+      target: runner
+    # using env file as configuration for non-critical variables
+    volumes:
+#      # Keeping Logs for Debug/Monitoring purposes.
+#      - ./logs:/logs
+      # Caching go modules for faster builds.
+      - account_go-modules:/go
+    restart: always
+#    command: "wait-for-it.sh 'postgres_db:5432' && ./account"
+
+    environment:
+#      # Port on which backend is running
+#      HOST: "127.0.0.1"
+      LOG_FORMATTER: "${ACCOUNT_LOG_FORMATTER}"
+      BIN_ARGS: "$${LOG_FORMATTER}"
+      HTTP_PORT: ${ACCOUNT_HTTP_PORT}
+      API_KEY: ${API_KEY}
+      DATABASE_URL: ${POSTGRES_URL}
+      CONF_PATH: ${ACCOUNT_CONF_PATH}
+      # Directory to puts logs in.
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+
+    # Port
+    ports:
+      - "7500:${ACCOUNT_HTTP_PORT}"
+
+    networks:
+      - auth
+      - account
+      - postgres_db
+
+  ads:
+    container_name: ads_service
+    build:
+      context: ads
+      dockerfile: build/Dockerfile
+      target: runner
+    env_file:
+      - ads/.env
+    volumes:
+      - ads_go-modules:/go
+    restart: always
+
+    environment:
+      ACCOUNT_URL: "account:${ACCOUNT_HTTP_PORT}"
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+
+    ports:
+      - "7501:7501"
+
+    networks:
+      - ads
+      - account
+
+  swagger-ads:
+    container_name: swagger_ui_ads
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./ads/docs:/usr/share/nginx/html/doc
+    environment:
+      API_URL: "doc/openapi.yml"
+    ports:
+      - "7001:8080"
+
+networks:
+  postgres_db:
+    driver: bridge
+  auth:
+    driver: bridge
+  account:
+    driver: bridge
+  ads:
+    driver: bridge
+
+volumes:
+  account_go-modules: {}
+  ads_go-modules: {}

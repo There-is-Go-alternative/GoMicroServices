@@ -5,16 +5,19 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 )
 
+// DeleteAccountCmd is a func type that return the logic for deleting a domain.Account.
 type DeleteAccountCmd func(ctx context.Context, input DeleteAccountInput) (*domain.Account, error)
 
+// DeleteAccountInput is used by UseCase.DeleteAccount for the deletion of an account.
 type DeleteAccountInput struct {
 	ID domain.AccountID `json:"id" binding:"required"`
 }
 
+// DeleteAccount is the UseCase handler that delete a domain.Account.
 func (u UseCase) DeleteAccount() DeleteAccountCmd {
 	return func(ctx context.Context, input DeleteAccountInput) (*domain.Account, error) {
 		account := domain.Account{ID: input.ID}
-		err := u.DB.Remove(&account)
+		err := u.DB.Remove(ctx, &account)
 		return &account, err
 	}
 }

@@ -1,5 +1,14 @@
 # GoMicroServices
 
+## Question for Follow-Up
+ - Email must be Unique in DB (contact purposes), responsibility is in usecase or Database ?
+ - Update in database, if ID (primary Key) doesn't exist, responsibility to check presence of this ID is in usecase or Database ?
+ - Use type from domain layer of other microservice ? (I.E: Account in Chat service)
+ - Infra ? apart for database, what use ?
+ - `Searching an object in a database based on a subquery string isn't a good idea.` What do you mean ?
+ - Authorization ? (I.E: http token) responsibility to fetch in transport layer but check where ?
+
+
 ## TODO
  - Small Dockerfile to build each MS
  - Small Docker Compose to link MS and use Docker container
@@ -37,7 +46,7 @@
 - WebSocket (pk pas ?)
 
 ### Infra:
-- dockerisation with docker-compose ? (separated but linked, restart management, easy scale)
+- dockerisation with docker-compose
 - K8s ??
 - Hosting on scaleway ? (ssh ez config)
 - CI/CD with Github action ?

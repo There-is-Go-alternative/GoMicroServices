@@ -5,29 +5,49 @@ import (
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
+	"time"
 )
 
+// --------------------- CreateAccount ------------------------
+
+// CreateAccountCmd is a func type that return the logic for creating a domain.Account.
 type CreateAccountCmd func(ctx context.Context, input CreateAccountInput) (*domain.Account, error)
 
+// CreateAccountInput is used by UseCase.CreateAccount for the creation of an account.
 type CreateAccountInput struct {
-	Email string `json:"email" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
 }
 
+// CreateAccount is the UseCase handler that create a domain.Account.
 func (u UseCase) CreateAccount() CreateAccountCmd {
 	return func(ctx context.Context, input CreateAccountInput) (*domain.Account, error) {
-		account := &domain.Account{Email: input.Email}
+		// Dealing with CreateAccountInput
+		account := &domain.Account{Email: input.Email, Firstname: input.Firstname, Lastname: input.Lastname}
 		accountID, err := domain.NewAccountID()
 		if err != nil {
-			// TODO: BETTER ERROR
 			return nil, err
 		}
-		account.ID = accountID
-		if !account.Validate() {
+		account.ID = *accountID
+
+		// Validating sent data
+		if err = account.Validate(); err != nil {
 			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user account data: %v", account),
+				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user account data: %v", err),
 			}
 		}
-		err = u.DB.Save(account)
+		// Checking in Database if there is no account with this ID.
+		duplicate, err := u.DB.ByID(ctx, *accountID)
+		if err == nil {
+			return nil, fmt.Errorf("account ID (%v) already exist in DB: %v", accountID, duplicate)
+		}
+
+		// Adding createdAt timestamp
+		account.CreatedAt = time.Now()
+
+		// Creating account
+		err = u.DB.Create(ctx, account)
 		return account, err
 	}
 }

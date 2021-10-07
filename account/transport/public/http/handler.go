@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
@@ -11,15 +12,19 @@ import (
 )
 
 type Handler struct {
+	APIKey string
 	logger zerolog.Logger
 }
 
-func NewAccountHandler() *Handler {
-	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
+func NewAccountHandler(APIKey string) *Handler {
+	return &Handler{
+		APIKey: APIKey,
+		logger: log.With().Str("service", "Http Handler").Logger(),
+	}
 }
 
-// GetAccountsHandler return the handler responsible for fetching all users account
-func (a Handler) GetAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFunc {
+// GetAllAccountsHandler return the handler responsible for fetching all users account
+func (a Handler) GetAllAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		payload, err := cmd(c.Request.Context())
 
@@ -33,7 +38,7 @@ func (a Handler) GetAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.HandlerFu
 }
 
 // GetAccountsByIDHandler return the handler responsible for fetching a specific account.
-func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIdCmd) gin.HandlerFunc {
+func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIDCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
@@ -44,7 +49,12 @@ func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIdCmd) gin.Handl
 		payload, err := cmd(c.Request.Context(), domain.AccountID(id))
 
 		if err != nil {
-			a.logger.Error().Msg("Error in GET by /account/:id")
+			a.logger.Error().Err(err).Msg("Error in GET by /account/:id")
+			// Todo : APIError with switch case on error Code
+			if errors.Is(err, xerrors.AccountNotFound) {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
@@ -58,7 +68,7 @@ func (a Handler) CreateAccountHandler(cmd usecase.CreateAccountCmd) gin.HandlerF
 		var account usecase.CreateAccountInput
 		err := c.BindJSON(&account)
 		if err != nil {
-			a.logger.Error().Msgf("User CreateAccountInput invalid: %v", account)
+			a.logger.Error().Msgf("CreateAccountInput invalid: %v", account)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusBadRequest, err)
 			return
@@ -66,6 +76,64 @@ func (a Handler) CreateAccountHandler(cmd usecase.CreateAccountCmd) gin.HandlerF
 		payload, err := cmd(c.Request.Context(), account)
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST create account: %v", err)
+			// TODO: better error
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusCreated, payload)
+	}
+}
+
+// PatchAccountHandler return the handler responsible for updating a user account.
+func (a Handler) PatchAccountHandler(cmd usecase.PatchAccountCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			a.logger.Error().Msg("PatchAccountHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			return
+		}
+		var account usecase.PatchAccountInput
+		err := c.BindJSON(&account)
+		if err != nil {
+			a.logger.Error().Msgf("PatchAccountInput invalid: %v", account)
+			// TODO: better error
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		account.ID = domain.AccountID(id)
+		payload, err := cmd(c.Request.Context(), account)
+		if err != nil {
+			a.logger.Error().Msgf("Error in PATCH account: %v", err)
+			// TODO: better error
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusCreated, payload)
+	}
+}
+
+// PutAccountHandler return the handler responsible for replacing a user account.
+func (a Handler) PutAccountHandler(cmd usecase.UpdateAccountCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			a.logger.Error().Msg("PutAccountHandler: param ID missing.")
+			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			return
+		}
+		var account usecase.UpdateAccountInput
+		err := c.BindJSON(&account)
+		if err != nil {
+			a.logger.Error().Msgf("PutAccountInput invalid: %v", account)
+			// TODO: better error
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		account.ID = domain.AccountID(id)
+		payload, err := cmd(c.Request.Context(), account)
+		if err != nil {
+			a.logger.Error().Msgf("Error in PUT account: %v", err)
 			// TODO: better error
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -92,5 +160,21 @@ func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerF
 			return
 		}
 		c.JSON(http.StatusOK, payload)
+	}
+}
+
+func (a Handler) Authorize() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		APIKey := c.GetHeader("Authorization")
+		if APIKey == "" {
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("Auth token missing"))
+			return
+		}
+		if APIKey != a.APIKey {
+			// TODO: Get Real Token
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("APIKey Invalid"))
+			return
+		}
+		// TODO: Get Real Token
 	}
 }

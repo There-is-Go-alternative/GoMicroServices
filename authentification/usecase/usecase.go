@@ -26,3 +26,19 @@ func NewUseCase(db Database) *UseCase {
 		logger: log.With().Str("service", "UseCase").Logger(),
 	}
 }
+
+type Database interface {
+	FindByEmail(context.Context, string) (domain.Auth, error)
+}
+
+type UseCase struct {
+	DB     Database
+	logger zerolog.Logger
+}
+
+func NewUseCase(db Database) *UseCase {
+	return &UseCase{
+		DB:     db,
+		logger: log.With().Str("service", "UseCase").Logger(),
+	}
+}

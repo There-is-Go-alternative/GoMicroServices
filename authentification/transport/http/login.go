@@ -9,11 +9,19 @@ import (
 	"github.com/gofiber/fiber"
 )
 
+type conf struct {
+	LoginExp time.Duration
+}
+
+var defaultConf = &conf{
+	LoginExp: 100 * time.Second,
+}
+
 func LoginHandler(cmd usecase.LoginProto) fiber.Handler {
 	return func(c *fiber.Ctx) {
 		var dto usecase.LoginDTO
 
-		ctx, cancel := context.WithTimeout(c.Context(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(c.Context(), defaultConf.LoginExp)
 		err := c.BodyParser(&dto)
 		defer cancel()
 		if err != nil {

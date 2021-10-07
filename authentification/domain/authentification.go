@@ -10,7 +10,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var SecretKey = []byte(os.Getenv("SECRET_KEY"))
+type conf struct {
+	SecretKey []byte
+	TokenExp  time.Time
+	LoginExp  time.Duration
+}
+
+var defaultConf = &conf{
+	SecretKey: []byte(os.Getenv("SECRET_KEY")),
+	TokenExp:  time.Now().Add(5 * time.Hour),
+	LoginExp:  100 * time.Second,
+}
 
 type Token struct {
 	Token string `json:"token"`
@@ -44,7 +54,7 @@ type Claims struct {
 }
 
 func CreateToken(userID string) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Hour)
+	expirationTime := defaultConf.TokenExp
 	claims := &Claims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{
@@ -53,13 +63,13 @@ func CreateToken(userID string) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(SecretKey)
+	return token.SignedString(defaultConf.SecretKey)
 }
 
 func VerifyToken(tokenStr string) (string, error) {
 	claims := new(Claims)
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return SecretKey, nil
+		return defaultConf.SecretKey, nil
 	})
 	if err != nil {
 		return "", err

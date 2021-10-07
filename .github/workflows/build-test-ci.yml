@@ -30,4 +30,8 @@ jobs:
           go get -u golang.org/x/lint/golint
       #Build the application
       - name: Run build
-        run: cd account/ && go build .
+        run: make go-build
+      
+      - name: Run docker build
+        run: make compose-build
+

@@ -29,7 +29,11 @@ func Login(collection *mongo.Collection) LoginProto {
 			return nil, err
 		}
 
-		var hashed = domain.HashPassword(input.Password)
+		hashed, err := domain.HashPassword(input.Password)
+		if err != nil {
+			log.Println("Email or Password are incorrect")
+			return nil, err
+		}
 		err = domain.VerifyPassword(hashed, auth.Password)
 		if err != nil {
 			log.Println("Email or Password are incorrect")

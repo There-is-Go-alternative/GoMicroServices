@@ -25,13 +25,13 @@ type Auth struct {
 }
 
 //id et clé d'encryption
-func HashPassword(password string) string {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return string(bytes)
+	return string(bytes), err
 }
 
 func VerifyPassword(hashed, password string) error {

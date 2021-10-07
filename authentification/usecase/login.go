@@ -3,11 +3,10 @@ package usecase
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/database"
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type LoginDTO struct {
@@ -15,30 +14,31 @@ type LoginDTO struct {
 	Password string `json:"password"`
 }
 
+type authUseCase struct {
+	db database.Database
+}
+
 type LoginProto func(ctx context.Context, input LoginDTO) (*domain.Token, error)
 
-func Login() LoginProto {
+func Login(collection *mongo.Collection) LoginProto {
 	return func(ctx context.Context, input LoginDTO) (*domain.Token, error) {
-		collection, err := database.GetMongoDbCollection(os.Getenv("MONGO_DB"), os.Getenv("MONGO_COLLECTION"))
-		if err != nil {
-			return nil, err
-		}
-
 		var auth domain.Auth
-		err = collection.FindOne(ctx, bson.M{"email": input.Email}).Decode(&auth)
+		auth, err := database.FindByEmail(ctx, input.Email, collection)
 		if err != nil {
-			log.Println(err)
+			log.Println("Email or Password are incorrect")
 			return nil, err
 		}
 
 		var hashed = domain.HashPassword(input.Password)
 		err = domain.VerifyPassword(hashed, auth.Password)
 		if err != nil {
+			log.Println("Email or Password are incorrect")
 			return nil, err
 		}
 
 		token, err := domain.CreateToken(auth.ID)
 		if err != nil {
+			log.Println("An error occured while creating token")
 			return nil, err
 		}
 

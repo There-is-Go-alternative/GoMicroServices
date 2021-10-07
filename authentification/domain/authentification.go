@@ -57,7 +57,7 @@ func CreateToken(userID string) (string, error) {
 }
 
 func VerifyToken(tokenStr string) (string, error) {
-	claims := &Claims{}
+	claims := new(Claims)
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return SecretKey, nil
 	})

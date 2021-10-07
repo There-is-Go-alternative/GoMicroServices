@@ -15,12 +15,12 @@ func LoginHandler(cmd usecase.LoginProto) fiber.Handler {
 	return func(c *fiber.Ctx) {
 		var dto usecase.LoginDTO
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(c.Context(), 100*time.Second)
 		err := c.BodyParser(&dto)
 		defer cancel()
 		if err != nil {
 			log.Printf("LoginInput invalid: %v\n", dto)
-			c.Status(http.StatusNotFound).JSON(err)
+			c.Status(http.StatusBadRequest).JSON(err)
 			return
 		}
 

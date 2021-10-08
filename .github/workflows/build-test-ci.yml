@@ -43,3 +43,6 @@ jobs:
           variableFileName: 'docker_compose_variables'
       - name: Run docker compose build
         run: make compose-build
+      - name: Run docker compose tests
+        run: make compose-build-test
+        

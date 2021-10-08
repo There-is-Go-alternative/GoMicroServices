@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
 )
@@ -19,16 +18,16 @@ func (u UseCase) Login() LoginProto {
 		var auth domain.Auth
 		auth, err := u.DB.FindByEmail(ctx, input.Email)
 		if err != nil {
-			return nil, fmt.Errorf("Email or password is invalid")
+			return nil, err
 		}
 
 		hashed, err := domain.HashPassword(input.Password)
 		if err != nil {
-			return nil, fmt.Errorf("Password error: %v", err.Error())
+			return nil, err
 		}
 		err = domain.VerifyPassword(hashed, auth.Password)
 		if err != nil {
-			return nil, fmt.Errorf("Email or password is invalid")
+			return nil, err
 		}
 
 		token, err := domain.CreateToken(auth.ID)

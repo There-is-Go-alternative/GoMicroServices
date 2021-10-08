@@ -31,9 +31,15 @@ jobs:
       #Build the application
       - name: Run build
         run: make go-build
+
   compose-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Set Variable
+        uses: deep-mm/set-variables@v1.0
+        with:
+          # Name of variable file
+          variableFileName: 'docker_compose_variables'
       - name: Run docker compose build
         run: make compose-build

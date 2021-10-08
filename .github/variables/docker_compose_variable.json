@@ -1,0 +1,44 @@
+{
+  "variables": [
+    {
+      "name": "ACCOUNT_HTTP_PORT",
+      "value": "7500"
+    },
+    {
+      "name": "ACCOUNT_CONF_PATH",
+      "value": "config.json"
+    },
+    {
+      "name": "ACCOUNT_HTTP_PORT",
+      "value": "7500"
+    },
+    {
+      "name": "ACCOUNT_LOG_FORMATTER",
+      "value": "-log-formatter text"
+    },
+    {
+      "name": "API_KEY",
+      "value": "0647a8a4-a743-46de-bbc1-a87f8f1e0e43"
+    },
+    {
+      "name": "POSTGRES_USER",
+      "value": "postgres"
+    },
+    {
+      "name": "POSTGRES_PASSWORD",
+      "value": "postgres"
+    },
+    {
+      "name": "POSTGRES_HOST",
+      "value": "postgres_db"
+    },
+    {
+      "name": "POSTGRES_PORT",
+      "value": "5432"
+    },
+    {
+      "name": "POSTGRES_URL",
+      "value": "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/account"
+    },
+  ]
+}

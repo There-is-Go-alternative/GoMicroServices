@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
 	database "github.com/There-is-Go-alternative/GoMicroServices/chats/infra/database"
+	log "github.com/sirupsen/logrus"
 )
 
 func Memory() {
@@ -72,6 +78,52 @@ func Memory() {
 	}
 }
 
+var (
+	confPath        = flag.String("conf", os.Getenv("CONF_PATH"), "path to the json config file.")
+	shutdownTimeOut = flag.Int("timeout", 2, "Time out for graceful shutdown, in seconds.")
+)
+
 func Firebase() {
-	fdb = database.NewFirebaseRealTimeDB()
+	// Setup context to be notified when the program receive a signal
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Setting up context ...")
+	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
+	ctx, ctxCancel := context.WithCancel(signalCtx)
+	_ = ctxCancel
+
+	// Initialising Chats Database
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Setting up Ads Database ...")
+	ChatsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.ChatsDefaultConf)
+	_ = ChatsStorage
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// // Setup an error channel
+	// errChan := make(chan error)
+
+	// // Waiting for a channel to receive something
+	// select {
+	// case <-ctx.Done():
+	// 	log.WithFields(log.Fields{
+	// 		"stage": "runner",
+	// 	}).Info("Context Canceled. Shutdown ...")
+	// 	time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
+	// 	return
+	// case err := <-errChan:
+	// 	log.WithFields(log.Fields{
+	// 		"stage": "runner",
+	// 	}).Errorf("An Error happend in a service: %s", err)
+	// 	// Cancel context to shut down blocking services.
+	// 	ctxCancel()
+	// 	time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
+	// 	os.Exit(1)
+	// }
+}
+
+func main() {
+	Firebase()
 }

@@ -2,14 +2,13 @@ package database
 
 import (
 	"context"
-	"fmt"
+	_ "fmt"
 
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"
-	// "github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
-	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
-	"github.com/pkg/errors"
+	_ "github.com/There-is-Go-alternative/GoMicroServices/chats/internal/xerrors"
+	_ "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
+	_ "github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
 
@@ -19,9 +18,9 @@ type FirebaseRealTimeDB struct {
 	DB   *firebaseDB.Client
 }
 
-var DefaultConf = &FirebaseConfig{
+var ChatsDefaultConf = &FirebaseConfig{
 	CollectionName:    "chats",
-	ServiceAdsKeyPath: "FirebaseCredentials.json",
+	ServiceAdsKeyPath: "infra/database/FirebaseCredentials.json",
 	BaseConfig: &firebase.Config{
 		DatabaseURL: "https://gomicroservicedatabase-default-rtdb.firebaseio.com/",
 	},

@@ -5,10 +5,10 @@ import (
 
 	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/chats/infra/database"
+	database "github.com/There-is-Go-alternative/GoMicroServices/chats/infra/database"
 )
 
-func main() {
+func Memory() {
 	userA := account.Account{ID: "UserA"}
 	userB := account.Account{ID: "UserB"}
 	userC := account.Account{ID: "UserC"}
@@ -70,4 +70,8 @@ func main() {
 	} else {
 		fmt.Printf("%+v\n", getAllMessages)
 	}
+}
+
+func Firebase() {
+	fdb = database.NewFirebaseRealTimeDB()
 }

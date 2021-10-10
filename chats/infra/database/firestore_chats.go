@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	_ "fmt"
 
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"

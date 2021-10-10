@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/There-is-Go-alternative/GoMicroServices/account/infra/database/prisma"
+	infraDB "github.com/There-is-Go-alternative/GoMicroServices/account/infra/database"
 	infraHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/infra/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/tests"
@@ -61,7 +61,7 @@ func main() {
 	setupContext.Info("Setting up Account Database ...")
 	//accountStorage := database.NewAccountMemMapStorage()
 	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
-	accountStorage, err := prisma.NewPrismaDB()
+	accountStorage, err := infraDB.NewPrismaDB()
 	if err != nil {
 		setupContext.Fatal("When initialising Acccount storage: %v", err)
 	}

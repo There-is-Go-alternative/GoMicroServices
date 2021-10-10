@@ -90,6 +90,24 @@ services:
     ports:
       - "7001:8080"
 
+  funds:
+    container_name: ads_service
+    build:
+      context: funds
+      dockerfile: build/Dockerfile
+      target: runner
+    volumes:
+      - funds_go-modules:/go
+    restart: always
+    environment:
+      DATABSE_URL: "${FUNDS_POSTGRES_URL}"
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+    ports:
+      - "7502:7502"
+    networks:
+      - account
+
 networks:
   auth:
     driver: bridge
@@ -101,3 +119,4 @@ networks:
 volumes:
   account_go-modules: {}
   ads_go-modules: {}
+  funds_go-modules: {}

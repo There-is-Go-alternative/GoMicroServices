@@ -1,3 +1,4 @@
+//go:generate go run github.com/prisma/prisma-client-go generate --schema schema.prisma
 package database
 
 import (

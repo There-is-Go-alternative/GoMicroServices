@@ -18,6 +18,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 #RUN go mod vendor
 
+RUN go generate ./...
+
 # Copy the source from the current directory to the working Directory inside the container
 COPY . .
 

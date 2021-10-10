@@ -1,5 +1,3 @@
-//go:generate go run github.com/prisma/prisma-client-go generate --schema infra/database/prisma/schema.prisma
-
 package main
 
 import (

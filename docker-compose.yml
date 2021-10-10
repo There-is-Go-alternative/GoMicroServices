@@ -68,6 +68,7 @@ services:
       API_KEY: "${API_KEY}"
       HTTP_PORT: "${ACCOUNT_HTTP_PORT}"
       CONF_PATH: "${ACCOUNT_CONF_PATH}"
+      LOG_FORMATTER: "${ACCOUNT_LOG_FORMATTER}"
       BIN_ARGS: "${ACCOUNT_LOG_FORMATTER}"
       # Directory to puts logs in.
       LOGS_DIR: "/logs"
@@ -142,7 +143,7 @@ services:
     environment:
       DATABASE_URL: "${FUNDS_POSTGRES_URL}"
       AUTHORIZED_KEYS: "${API_KEY}"
-      CONF_PATH: "config.json"
+      CONF_PATH: "${FUNDS_CONF_PATH}"
     ports:
       - "7502:7502"
     networks:

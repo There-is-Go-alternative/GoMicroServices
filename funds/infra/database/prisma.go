@@ -1,4 +1,4 @@
-//go:generate go run github.com/prisma/prisma-client-go generate --schema schema.prisma
+//go:generate go run github.com/prisma/prisma-client-go generate
 package database
 
 import (

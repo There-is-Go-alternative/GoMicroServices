@@ -37,23 +37,6 @@ compose-run-db:
 compose-build-test:
 	$(COMPOSE) -f $(COMPOSE_COMMON_FILE) -f $(COMPOSE_TEST_FILE) build
 
-.PHONY: compose-run
-compose-run: compose-build
-	$(COMPOSE) up
-
-.PHONY: compose-run-bg
-compose-run-bg: compose-build
-	$(COMPOSE) up -d
-
-.PHONY: compose-run-db
-compose-run-db:
-	$(COMPOSE) up postgres_db
-
-.PHONY: compose-run-test
-compose-run-test: compose-build-test
-	$(COMPOSE) up
-
-
 .PHONY: go-build
 go-build: $(MICRO_SERVICES_DIRS)
 	@for ms_dir in $^ ; do 																							\
@@ -82,8 +65,3 @@ compose-clean:
 .PHONY: docker-clean
 docker-clean:
 	@echo "y" | docker system prune -a --volumes
-
-.PHONY: compose-clean
-compose-clean:
-	$(COMPOSE) rm -fsv
->>>>>>> 7fe8292 (add(account): Add prisma & postgres infra implem (WIP).)

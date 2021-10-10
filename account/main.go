@@ -50,7 +50,6 @@ func main() {
 	if err != nil {
 		setupContext.Fatalf("problem when parsing config: %v", err)
 	}
-	logger.Info(conf)
 
 	// Setup context to be notified when the program receive a signal
 	setupContext.Info("Setting up context ...")

@@ -62,6 +62,16 @@ account-migration:
 compose-clean:
 	$(COMPOSE) rm -fsv
 
+.PHONY: docker-build
+docker-build:
+	@for ms_dir in $^ ; do 																		\
+		echo "Running lint in {$${ms_dir}} ..." ; 												\
+		cd $(PROJ_DIR)/$${ms_dir} && docker build -t $${ms_dir}:latest -f build/Dockerfile .	\
+		echo "Microservice {$${ms_dir}} Linted !\n" ; 											\
+	done
+
+	@echo "y" | docker system prune -a --volumes
+
 .PHONY: docker-clean
 docker-clean:
 	@echo "y" | docker system prune -a --volumes

@@ -1,6 +1,6 @@
 #######################################################################################################################
 # Start from golang base image
-FROM golang:1.17-alpine AS builder
+FROM golang:1.17 AS builder
 
 # Add Image info
 LABEL name='Golang 1.17 (alpine) Image'
@@ -18,10 +18,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 #RUN go mod vendor
 
-RUN go generate ./...
+# https://github.com/prisma/prisma-client-go/blob/main/docs/deploy.md
+# prefetch the binaries, so that they will be cached and not downloaded on each change
+RUN go run github.com/prisma/prisma-client-go prefetch
+
 
 # Copy the source from the current directory to the working Directory inside the container
 COPY . .
+
+RUN go generate ./...
 
 RUN go build -o funds .
 

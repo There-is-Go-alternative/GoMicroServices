@@ -2,13 +2,11 @@ package database
 
 import (
 	"context"
-	_ "fmt"
+	"fmt"
 
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"
-	_ "github.com/There-is-Go-alternative/GoMicroServices/chats/internal/xerrors"
-	_ "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
-	_ "github.com/pkg/errors"
+	"github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
 	"google.golang.org/api/option"
 )
 
@@ -51,25 +49,15 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 	}, nil
 }
 
-// Create add list of domain.Ad to the Firestore realtime database
-// func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) error {
-// 	if len(ads) == 0 {
-// 		return nil
-// 	}
+// Create add a chat to the Firestore realtime database
+func (m *FirebaseRealTimeDB) Create(ctx context.Context, chat domain.Chat) error {
 
-// 	errs := xerrors.ErrList{}
-// 	for _, ad := range ads {
-// 		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
-// 		if err != nil {
-// 			errs.Add(err)
-// 		}
-// 	}
-
-// 	if !errs.Nil() {
-// 		return errs
-// 	}
-// 	return nil
-// }
+	err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, chat.ID.String())).Set(ctx, chat)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // Update a list of domain.Ad to the Firestore realtime database
 // func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) error {

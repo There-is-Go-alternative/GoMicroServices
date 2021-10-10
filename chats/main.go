@@ -91,13 +91,17 @@ func Firebase() {
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
 	_ = ctxCancel
+	userA := account.Account{ID: "UserA"}
+	userB := account.Account{ID: "UserB"}
+	chatA := chats.Chat{ID: chats.ChatID("ChatA"), UsersIDs: []account.AccountID{userA.ID, userB.ID}}
 
 	// Initialising Chats Database
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads Database ...")
 	ChatsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.ChatsDefaultConf)
-	_ = ChatsStorage
+	// _ = ChatsStorage
+	ChatsStorage.Create(ctx, chatA)
 	if err != nil {
 		log.Fatal(err)
 	}

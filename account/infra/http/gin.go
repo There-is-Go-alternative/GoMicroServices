@@ -24,10 +24,6 @@ func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config, l
 	// Configuring CORS
 	router.Use(cors.Default())
 
-	router.GET("/health", func(c *gin.Context) {
-		c.Status(netHTTP.StatusOK)
-	})
-
 	transportPublicHTTP.ApplyAccountRoutes(router, uc, conf)
 
 	// Grouping Account routes with url specified in config (I.E: 'account')

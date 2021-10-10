@@ -97,7 +97,7 @@ func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance 
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.ID.Equals(id.String()),
 	).Update(
-		db.Funds.Balance.Decrement(new_balance),
+		db.Funds.Balance.Increment(new_balance),
 		db.Funds.LastUpdated.Set(time.Now()),
 	).Exec(ctx)
 

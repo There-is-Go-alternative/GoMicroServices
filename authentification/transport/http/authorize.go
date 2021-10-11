@@ -14,7 +14,7 @@ func AuthorizeHandler(cmd usecase.AuthorizeProto) fiber.Handler {
 
 		err := c.BodyParser(&token)
 		if err != nil {
-			c.Status(http.StatusBadRequest).JSON(err)
+			ResponseError(c, http.StatusBadRequest, err)
 			return
 		}
 
@@ -23,6 +23,6 @@ func AuthorizeHandler(cmd usecase.AuthorizeProto) fiber.Handler {
 			c.Status(http.StatusNotFound).JSON(err)
 			return
 		}
-		c.Status(http.StatusCreated).JSON(payload)
+		ResponseSuccess(c, http.StatusCreated, payload)
 	}
 }

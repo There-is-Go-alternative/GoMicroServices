@@ -56,7 +56,6 @@ func (db *MongoDB) FindByEmail(ctx context.Context, email string) (domain.Auth, 
 	err := db.collection.FindOne(ctx, bson.M{"email": email}).Decode(&auth)
 	if err != nil {
 		return domain.Auth{}, fmt.Errorf("Email or password is invalid")
-
 	}
 	return auth, nil
 }
@@ -67,7 +66,6 @@ func (db *MongoDB) FindByID(ctx context.Context, id string) (domain.Auth, error)
 	if err != nil {
 		log.Println(err)
 		return domain.Auth{}, fmt.Errorf("Email or password is invalid")
-
 	}
 	return auth, nil
 }

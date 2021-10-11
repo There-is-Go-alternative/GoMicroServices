@@ -16,12 +16,12 @@ type UpdateAdInput struct {
 	Title string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 	Price uint `json:"price,omitempty"`
-	Picture string `json:"picture,omitempty"`
+	Pictures string `json:"pictures,omitempty"`
 }
 
 func (u UseCase) UpdateAd() UpdateAdCmd {
 	return func(ctx context.Context, input UpdateAdInput) (*domain.Ad, error) {
-		ad := &domain.Ad{ID: domain.AdID(input.ID), Title: input.Title, Description: input.Description, Price: input.Price, Picture: strings.Split(input.Picture, ",")}
+		ad := &domain.Ad{ID: domain.AdID(input.ID), Title: input.Title, Description: input.Description, Price: input.Price, Pictures: strings.Split(input.Pictures, ",")}
 
 		if !ad.Validate() {
 			return nil, xerrors.ErrorWithCode{

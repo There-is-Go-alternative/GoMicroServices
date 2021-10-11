@@ -74,9 +74,7 @@ type ImageStructure struct {
 	URL       string `json:"url"`
 }
 
-func DownloadImage() io.Reader {
-	url := "http://i.imgur.com/m1UIjW1.jpg"
-
+func DownloadImage(url string) io.Reader {
     response, err := http.Get(url)
     if err != nil {
         log.Fatal(err)
@@ -85,44 +83,53 @@ func DownloadImage() io.Reader {
 	return response.Body
 }
 
-func UploadImage(m *FirebaseRealTimeDB, ctx context.Context) error {
-	wc := m.Storage.Bucket("gomicroservicedatabase.appspot.com").Object("Aucun").NewWriter(ctx)
-	body := DownloadImage()
+func UploadImage(m *FirebaseRealTimeDB, ctx context.Context, ad *domain.Ad) ([]string, error) {
+	lst := make([]string, 0)
+	for i, picture := range ad.Pictures {
+		url := fmt.Sprintf("%s/%s_%d", "https://storage.cloud.google.com/gomicroservicedatabase-eu", ad.ID.String(), i)
+		lst = append(lst, url)
+		wc := m.Storage.Bucket("gomicroservicedatabase-eu").Object(fmt.Sprintf("%s_%d", ad.ID.String(), i)).NewWriter(ctx)
+		body := DownloadImage(picture)
 
-	id := uuid.New() 
-	wc.ObjectAttrs.Metadata = map[string]string{"firebaseStorageDownloadTokens": id.String()} 
-	_, err := io.Copy(wc, body)
-	if err != nil {
-		fmt.Print(err)
-		fmt.Printf("ERROR")
-		return err
-	}
-	if err := wc.Close(); err != nil {
-		fmt.Printf("ERROR3")
-		return err
-	}
-	imageStructure := ImageStructure{
-		ImageName: "Aucune",
-		URL:       "https://storage.cloud.google.com/gomicroservicedatabase.appspot.com/Aucune",
-	}
-	_, _, err = m.Client.Collection("image").Add(ctx, imageStructure)
+		// Tricks to make an image previewed on the firebase panel (from: https://stackoverflow.com/questions/62223854/how-to-upload-image-to-firebase-storage-using-golang)
+		id := uuid.New() 
+ 		wc.ObjectAttrs.Metadata = map[string]string{"firebaseStorageDownloadTokens": id.String()} 
 
-	if err != nil {
-		fmt.Printf("ERROR2")
-		return err
+		_, err := io.Copy(wc, body)
+		if err != nil {
+			return lst, err
+		}
+
+		if err := wc.Close(); err != nil {
+			return lst, err
+		}
+
+		imageStructure := ImageStructure{
+			ImageName: fmt.Sprintf("%s_%d", ad.ID.String(), i),
+			URL:       url,
+		}
+
+		go func() {
+			_, _, err = m.Client.Collection("image").Add(ctx, imageStructure)
+		}()
+
+		if err != nil {
+			return lst, err
+		}
 	}
-	return nil
+	return lst, nil
 } 
 
 // Create add list of domain.Ad to the Firestore realtime database
 func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) error {
-	UploadImage(m, ctx)
 	if len(ads) == 0 {
 		return nil
 	}
 
 	errs := xerrors.ErrList{}
 	for _, ad := range ads {
+		pictures, _ := UploadImage(m, ctx, ad)
+		ad.Pictures = pictures
 		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
 		if err != nil {
 			errs.Add(err)

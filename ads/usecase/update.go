@@ -29,11 +29,11 @@ func (u UseCase) UpdateAd() UpdateAdCmd {
 			}
 		}
 
-		acc, _ := u.DB.ByID(ctx, ad.ID)
+		ad_check, _ := u.DB.ByID(ctx, ad.ID)
 
-		if acc == nil {
+		if ad_check == nil {
 			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("account doesn't exists: %v", ad),
+				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("ad doesn't exists: %v", ad),
 			}
 		}
 		err := u.DB.Update(ctx, ad)

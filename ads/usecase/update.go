@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
@@ -20,7 +21,7 @@ type UpdateAdInput struct {
 
 func (u UseCase) UpdateAd() UpdateAdCmd {
 	return func(ctx context.Context, input UpdateAdInput) (*domain.Ad, error) {
-		ad := &domain.Ad{ID: domain.AdID(input.ID), Title: input.Title, Description: input.Description, Price: input.Price, Picture: input.Picture}
+		ad := &domain.Ad{ID: domain.AdID(input.ID), Title: input.Title, Description: input.Description, Price: input.Price, Picture: strings.Split(input.Picture, ",")}
 
 		if !ad.Validate() {
 			return nil, xerrors.ErrorWithCode{

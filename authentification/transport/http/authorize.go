@@ -14,13 +14,13 @@ func AuthorizeHandler(cmd usecase.AuthorizeProto) fiber.Handler {
 
 		err := c.BodyParser(&token)
 		if err != nil {
-			c.Status(http.StatusBadRequest).JSON(err.Error())
+			c.Status(http.StatusBadRequest).JSON(err)
 			return
 		}
 
 		payload, err := cmd(c.Context(), token)
 		if err != nil {
-			c.Status(http.StatusNotFound).JSON(err.Error())
+			c.Status(http.StatusNotFound).JSON(err)
 			return
 		}
 		c.Status(http.StatusCreated).JSON(payload)

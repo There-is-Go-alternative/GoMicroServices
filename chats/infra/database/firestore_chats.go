@@ -32,6 +32,7 @@ type FirebaseConfig struct {
 	BaseConfig        *firebase.Config
 }
 
+//Initialize the database instance
 func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*FirebaseRealTimeDB, error) {
 	opt := option.WithCredentialsFile(conf.ServiceAdsKeyPath)
 	opt2 := option.WithEndpoint(conf.BaseConfig.DatabaseURL)
@@ -51,7 +52,7 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 	}, nil
 }
 
-// Create add a chat to the Firestore realtime database
+// Create adds a chat to the Firestore realtime database
 func (m *FirebaseRealTimeDB) Create(ctx context.Context, chat domain.Chat) error {
 
 	err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, chat.ID.String())).Set(ctx, chat)
@@ -77,10 +78,10 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.ChatID) (*domai
 	return &chat, nil
 }
 
-// All return all domain.Ad in the Firestore realtime database
+// All return all domain.Chat in the Firestore realtime database
 func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Chat, error) {
 	var chat map[string]*domain.Chat
-	if err := m.DB.NewRef(m.Conf.CollectionName).OrderByChild("id").Get(ctx, &chat); err != nil {
+	if err := m.DB.NewRef(m.Conf.CollectionName).Get(ctx, &chat); err != nil {
 		return nil, err
 	}
 	lst := make([]*domain.Chat, 0, len(chat))
@@ -90,22 +91,20 @@ func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Chat, error) {
 	return lst, nil
 }
 
-// Remove a domain.Ad from the Firestore realtime database
-// func (m *FirebaseRealTimeDB) Remove(ctx context.Context, ads ...*domain.Ad) error {
-// 	if len(ads) <= 0 {
-// 		return nil
-// 	}
-
-// 	errs := xerrors.ErrList{}
-// 	for _, ad := range ads {
-// 		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Delete(ctx)
-// 		if err != nil {
-// 			errs.Add(err)
-// 		}
-// 	}
-
-// 	if !errs.Nil() {
-// 		return errs
-// 	}
-// 	return nil
-// }
+//Get all conversations of a user
+func (m *FirebaseRealTimeDB) GetAllChatsOfUser(ctx context.Context, ID string) ([]*domain.Chat, error) {
+	var chat map[string]*domain.Chat
+	if err := m.DB.NewRef(m.Conf.CollectionName).OrderByKey().Get(ctx, &chat); err != nil {
+		return nil, err
+	}
+	lst := make([]*domain.Chat, 0, len(chat))
+	for _, a := range chat {
+		for _, b := range a.UsersIDs {
+			if b.String() == ID {
+				lst = append(lst, a)
+				break
+			}
+		}
+	}
+	return lst, nil
+}

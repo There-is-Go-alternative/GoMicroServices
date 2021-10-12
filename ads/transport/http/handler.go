@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
@@ -78,22 +77,15 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 // CreateAdHandler return the handler responsible for creating an ad.
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := api.Authorize(c)
-		//TODO fix error
-		/*
+		account, err := api.Authorize(c)
+
 		if err != nil {
-			//TODO encapsulate function
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "You need to be logged in",
-			})
+			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
 			return
 		}
-		*/
 		var ad usecase.CreateAdInput
 		err = c.BindJSON(&ad)
-		ad.UserId = "Hello" //string(account.ID)
-		fmt.Printf("%+v\n", ad);
+		ad.UserId = string(account)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
@@ -118,8 +110,17 @@ func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
 			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
+		/* AUTHORIZE */
+		_, err := api.Authorize(c)
+
+		if err != nil {
+			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			return
+		}
+		/* END AUTHORIZE */
+
 		var ad usecase.UpdateAdInput
-		err := c.BindJSON(&ad)
+		err = c.BindJSON(&ad)
 		ad.ID = domain.AdID(id)
 
 		if err != nil {
@@ -146,6 +147,15 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
+
+		/* AUTHORIZE */
+		_, err := api.Authorize(c)
+
+		if err != nil {
+			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			return
+		}
+		/* END AUTHORIZE */
 
 		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {

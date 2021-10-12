@@ -2,24 +2,32 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 
-	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/gin-gonic/gin"
 )
 
+type DataElement struct{
+    UserID string `json:"user_id"`
+}
+
+type Response struct {
+    Data DataElement `json:"data"`
+}
+
 func SendRequest(token string) (string, error) {
-	request, err := http.NewRequest("GET", "http://localhost:7500/account/test", nil)
+	form := url.Values{}
+	form.Set("token", token)
+	request, err := http.NewRequest("POST", "http://localhost:8080/authorize", strings.NewReader(form.Encode()))
 
 	if err != nil {
 		return "", err
 	}
-	//TODO Add "Bearer token"
-	request.Header.Add("Authorization", fmt.Sprintf("%s", token))
-
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	client := &http.Client{}
 	response, err := client.Do(request)
 
@@ -36,24 +44,27 @@ func SendRequest(token string) (string, error) {
 	return string([]byte(body)), nil
 }
 
-func Authorize(c *gin.Context) (*domain.Account, error) {
+func Authorize(c *gin.Context) (string, error) {
 	token := c.Request.Header.Get("Authorization")
 
 	if token == "" {
-		return nil, xerrors.AuthorizationError
+		return "", xerrors.AuthorizationError
 	}
 
 	account, err := SendRequest(token)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var new_account_response struct {Data domain.Account `json:"data"`}
+	var new_account_response Response
 	err = json.Unmarshal([]byte(account), &new_account_response)
-
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &new_account_response.Data, nil
+	
+	if new_account_response.Data.UserID == "" {
+		return "", xerrors.AuthorizationError
+	}
+	return new_account_response.Data.UserID, nil
 }

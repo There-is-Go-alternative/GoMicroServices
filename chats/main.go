@@ -8,9 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	account "github.com/There-is-Go-alternative/GoMicroServices/account/domain"
-	chats "github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
 	database "github.com/There-is-Go-alternative/GoMicroServices/chats/infra/database"
+	"github.com/There-is-Go-alternative/GoMicroServices/chats/internal/config"
+	"github.com/There-is-Go-alternative/GoMicroServices/chats/transport/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/chats/usecase"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,6 +21,19 @@ var (
 )
 
 func Firebase() {
+	flag.Parse()
+	if *confPath == "" {
+		log.Fatal("Config path is empty")
+	}
+
+	// Reading config from json file
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Parsing config ...")
+	conf, err := config.ParseConfigFromPath(*confPath)
+	if err != nil {
+		log.Fatalf("probleme when parsing config: %v", err)
+	}
 	// Setup context to be notified when the program receive a signal
 	log.WithFields(log.Fields{
 		"stage": "setup",
@@ -38,66 +52,78 @@ func Firebase() {
 		os.Exit(42)
 	}
 
-	// Initialising Messages Database
+	// Initialising Ads UseCase
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Messages Database ...")
-	MessagesStorage, err := database.NewFirebaseRealTimeDB(ctx, database.MessagesDefaultConf)
-	if err != nil {
-		fmt.Printf("%+v\n", err)
-		os.Exit(42)
-	}
+	}).Info("Setting up Ads UseCase ...")
+	chatsUseCase := usecase.NewGetUseCase(ChatsStorage)
 
-	userA := account.Account{ID: "UserA"}
-	userB := account.Account{ID: "UserB"}
-	userC := account.Account{ID: "UserC"}
-	chatA := chats.Chat{ID: chats.ChatID("ChatA"), UsersIDs: []string{userA.ID.String(), userB.ID.String()}}
-	chatB := chats.Chat{ID: chats.ChatID("ChatB"), UsersIDs: []string{userC.ID.String(), userB.ID.String()}}
-	chatC := chats.Chat{ID: chats.ChatID("ChatC"), UsersIDs: []string{userA.ID.String(), userC.ID.String()}}
-	chatD := chats.Chat{ID: chats.ChatID("ChatD"), UsersIDs: []string{userA.ID.String(), userB.ID.String(), userC.ID.String()}}
-	messageA := chats.Message{ID: chats.MessageID("Message A to B"), ChatID: chatA.ID.String(), Content: "hello :)", SenderID: userA.ID.String()}
-	messageB := chats.Message{ID: chats.MessageID("Message C to B"), ChatID: chatB.ID.String(), Content: "hello :)", SenderID: userC.ID.String()}
-	messageC := chats.Message{ID: chats.MessageID("Message A to C"), ChatID: chatC.ID.String(), Content: "hello :)", SenderID: userA.ID.String()}
+	// Initialising Gin Server
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Setting up Ads Http handler ...")
+	ginServer := http.NewHttpServer(chatsUseCase, conf)
 
-	//Create Chats
-	err = ChatsStorage.CreateChat(ctx, chatA)
-	if err != nil {
-		fmt.Printf("Create ChatA error:\n%+v\nEnd\n", err)
-	}
-	err = ChatsStorage.CreateChat(ctx, chatB)
-	if err != nil {
-		fmt.Printf("Create ChatB error:\n%+v\nEnd\n", err)
-	}
-	err = ChatsStorage.CreateChat(ctx, chatC)
-	if err != nil {
-		fmt.Printf("Create ChatC error:\n%+v\nEnd\n", err)
-	}
-	err = ChatsStorage.CreateChat(ctx, chatD)
-	if err != nil {
-		fmt.Printf("Create ChatD error:\n%+v\nEnd\n", err)
-	}
+	// Initialising Messages Database
+	// log.WithFields(log.Fields{
+	// 	"stage": "setup",
+	// }).Info("Setting up Messages Database ...")
+	// MessagesStorage, err := database.NewFirebaseRealTimeDB(ctx, database.MessagesDefaultConf)
+	// if err != nil {
+	// 	fmt.Printf("%+v\n", err)
+	// 	os.Exit(42)
+	// }
 
-	// Get all chats of userA
-	chatsOfUser, err := ChatsStorage.GetAllChatsOfUser(ctx, userA.ID.String())
-	if err != nil {
-		fmt.Printf("Chats of user error:\n%+v\nEnd\n", err)
-	} else {
-		fmt.Printf("Chats of user:\n%+v\nEnd\n", chatsOfUser)
-	}
+	// userA := account.Account{ID: "UserA"}
+	// userB := account.Account{ID: "UserB"}
+	// userC := account.Account{ID: "UserC"}
+	// chatA := chats.Chat{ID: chats.ChatID("ChatA"), UsersIDs: []string{userA.ID.String(), userB.ID.String()}}
+	// chatB := chats.Chat{ID: chats.ChatID("ChatB"), UsersIDs: []string{userC.ID.String(), userB.ID.String()}}
+	// chatC := chats.Chat{ID: chats.ChatID("ChatC"), UsersIDs: []string{userA.ID.String(), userC.ID.String()}}
+	// chatD := chats.Chat{ID: chats.ChatID("ChatD"), UsersIDs: []string{userA.ID.String(), userB.ID.String(), userC.ID.String()}}
+	// messageA := chats.Message{ID: chats.MessageID("Message A to B"), ChatID: chatA.ID.String(), Content: "hello :)", SenderID: userA.ID.String()}
+	// messageB := chats.Message{ID: chats.MessageID("Message C to B"), ChatID: chatB.ID.String(), Content: "hello :)", SenderID: userC.ID.String()}
+	// messageC := chats.Message{ID: chats.MessageID("Message A to C"), ChatID: chatC.ID.String(), Content: "hello :)", SenderID: userA.ID.String()}
 
-	//Send messages
-	err = MessagesStorage.CreateMessage(ctx, messageA)
-	if err != nil {
-		fmt.Printf("Create messageA error:\n%+v\nEnd\n", err)
-	}
-	err = MessagesStorage.CreateMessage(ctx, messageB)
-	if err != nil {
-		fmt.Printf("Create messageB error:\n%+v\nEnd\n", err)
-	}
-	err = MessagesStorage.CreateMessage(ctx, messageC)
-	if err != nil {
-		fmt.Printf("Create messageC error:\n%+v\nEnd\n", err)
-	}
+	// //Create Chats
+	// err = ChatsStorage.CreateChat(ctx, chatA)
+	// if err != nil {
+	// 	fmt.Printf("Create ChatA error:\n%+v\nEnd\n", err)
+	// }
+	// err = ChatsStorage.CreateChat(ctx, chatB)
+	// if err != nil {
+	// 	fmt.Printf("Create ChatB error:\n%+v\nEnd\n", err)
+	// }
+	// err = ChatsStorage.CreateChat(ctx, chatC)
+	// if err != nil {
+	// 	fmt.Printf("Create ChatC error:\n%+v\nEnd\n", err)
+	// }
+	// err = ChatsStorage.CreateChat(ctx, chatD)
+	// if err != nil {
+	// 	fmt.Printf("Create ChatD error:\n%+v\nEnd\n", err)
+	// }
+
+	// // Get all chats of userA
+	// chatsOfUser, err := ChatsStorage.GetAllChatsOfUser(ctx, userA.ID.String())
+	// if err != nil {
+	// 	fmt.Printf("Chats of user error:\n%+v\nEnd\n", err)
+	// } else {
+	// 	fmt.Printf("Chats of user:\n%+v\nEnd\n", chatsOfUser)
+	// }
+
+	// //Send messages
+	// err = MessagesStorage.CreateMessage(ctx, messageA)
+	// if err != nil {
+	// 	fmt.Printf("Create messageA error:\n%+v\nEnd\n", err)
+	// }
+	// err = MessagesStorage.CreateMessage(ctx, messageB)
+	// if err != nil {
+	// 	fmt.Printf("Create messageB error:\n%+v\nEnd\n", err)
+	// }
+	// err = MessagesStorage.CreateMessage(ctx, messageC)
+	// if err != nil {
+	// 	fmt.Printf("Create messageC error:\n%+v\nEnd\n", err)
+	// }
 
 	//Get all messages of chatA
 	// messagesOfChatA, err := ChatsStorage.AllMessagesOfChat()

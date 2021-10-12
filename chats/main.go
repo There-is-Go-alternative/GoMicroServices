@@ -96,6 +96,7 @@ func Firebase() {
 		log.WithFields(log.Fields{
 			"stage": "runner",
 		}).Info("Context Canceled. Shutdown ...")
+		ctxCancel()
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
 		return
 	case err := <-errChan:

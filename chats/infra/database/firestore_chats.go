@@ -7,6 +7,8 @@ import (
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"
 	"github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/chats/internal/xerrors"
+	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
 
@@ -59,62 +61,34 @@ func (m *FirebaseRealTimeDB) Create(ctx context.Context, chat domain.Chat) error
 	return nil
 }
 
-// Update a list of domain.Ad to the Firestore realtime database
-// func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) error {
-// 	adTransaction := func(ad *domain.Ad) func(transaction firebaseDB.TransactionNode) (interface{}, error) {
-// 		return func(transaction firebaseDB.TransactionNode) (interface{}, error) {
-// 			var new_ad domain.Ad
-
-// 			if err := transaction.Unmarshal(&new_ad); err != nil {
-// 				return nil, err
-// 			}
-
-// 			new_ad = *ad
-// 			return new_ad, nil
-// 		}
-// 	}
-// 	errs := xerrors.ErrList{}
-// 	for _, ad := range ads {
-// 		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
-// 		if err != nil {
-// 			errs.Add(err)
-// 		}
-// 	}
-
-// 	if !errs.Nil() {
-// 		return errs
-// 	}
-// 	return nil
-// }
-
 // ByID Retrieve the info that match "id".
 // Strict: As ID is the key of the map, return an error if not found
-// func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AdID) (*domain.Ad, error) {
-// 	var ad domain.Ad
-// 	if err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ID)).Get(ctx, &ad); err != nil {
-// 		return nil, err
-// 	}
+func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.ChatID) (*domain.Chat, error) {
+	var chat domain.Chat
+	if err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ID)).Get(ctx, &chat); err != nil {
+		return nil, err
+	}
 
-// 	if ad.ID == "" {
-// 		return nil, errors.Wrapf(
-// 			xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: xerrors.AdNotFound}, "ID {%v}", ID,
-// 		)
-// 	}
-// 	return &ad, nil
-// }
+	if chat.ID.String() == "" {
+		return nil, errors.Wrapf(
+			xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: xerrors.ChatNotFound}, "ID {%v}", ID,
+		)
+	}
+	return &chat, nil
+}
 
 // All return all domain.Ad in the Firestore realtime database
-// func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Ad, error) {
-// 	var ads map[string]*domain.Ad
-// 	if err := m.DB.NewRef(m.Conf.CollectionName).OrderByChild("id").Get(ctx, &ads); err != nil {
-// 		return nil, err
-// 	}
-// 	lst := make([]*domain.Ad, 0, len(ads))
-// 	for _, a := range ads {
-// 		lst = append(lst, a)
-// 	}
-// 	return lst, nil
-// }
+func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Chat, error) {
+	var chat map[string]*domain.Chat
+	if err := m.DB.NewRef(m.Conf.CollectionName).OrderByChild("id").Get(ctx, &chat); err != nil {
+		return nil, err
+	}
+	lst := make([]*domain.Chat, 0, len(chat))
+	for _, a := range chat {
+		lst = append(lst, a)
+	}
+	return lst, nil
+}
 
 // Remove a domain.Ad from the Firestore realtime database
 // func (m *FirebaseRealTimeDB) Remove(ctx context.Context, ads ...*domain.Ad) error {

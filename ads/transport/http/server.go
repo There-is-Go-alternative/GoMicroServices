@@ -37,6 +37,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	})
 	adHandler := NewAdHandler()
 	// Grouping Ad routes with url specified in config (I.E: 'ad')
+
 	ad := router.Group(fmt.Sprintf("/%s", conf.AdEndpoint))
 	{
 		ad.POST("/", adHandler.CreateAdHandler(uc.CreateAd()))

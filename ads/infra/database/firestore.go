@@ -73,7 +73,7 @@ type ImageStructure struct {
 	URL       string `json:"url"`
 }
 
-func DownloadImage(url string) (io.Reader, error) {
+func DownloadImage(url string) (io.ReadCloser, error) {
     response, err := http.Get(url)
     if err != nil {
         return nil, err
@@ -87,7 +87,8 @@ func UploadImage(m *FirebaseRealTimeDB, ctx context.Context, ad *domain.Ad) ([]s
 	for i, picture := range ad.Pictures {
 		image_name := fmt.Sprintf("%s_%d", ad.ID.String(), i)
 		url := fmt.Sprintf("%s/%s", "https://storage.cloud.google.com/gomicroservicedatabase-eu", image_name)
-		lst = append(lst, url)
+		url_no_auth := "https://firebasestorage.googleapis.com/v0/b/gomicroservicedatabase-eu/o/" + image_name + "?alt=media"
+		lst = append(lst, url_no_auth)
 		wc := m.Storage.Bucket("gomicroservicedatabase-eu").Object(image_name).NewWriter(ctx)
 		body, err := DownloadImage(picture)
 
@@ -105,7 +106,11 @@ func UploadImage(m *FirebaseRealTimeDB, ctx context.Context, ad *domain.Ad) ([]s
 			return lst, err
 		}
 
-		if err := wc.Close(); err != nil {
+		if err = wc.Close(); err != nil {
+			return lst, err
+		}
+
+		if err = body.Close(); err != nil {
 			return lst, err
 		}
 
@@ -176,8 +181,8 @@ func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) erro
 			errs.Add(err)
 			continue
 		}
-	
 		ad.Pictures = pictures
+
 		err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
 		if err != nil {
 			errs.Add(err)

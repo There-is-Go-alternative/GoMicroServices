@@ -30,7 +30,7 @@ func (m *FirebaseRealTimeDB) CreateChat(ctx context.Context, chat domain.Chat) e
 
 // ByID Retrieve the info that match "id".
 // Strict: As ID is the key of the map, return an error if not found
-func (m *FirebaseRealTimeDB) ChatByID(ctx context.Context, ID domain.ChatID) (*domain.Chat, error) {
+func (m *FirebaseRealTimeDB) GetChatByID(ctx context.Context, ID domain.ChatID) (*domain.Chat, error) {
 	var chat domain.Chat
 	if err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ID)).Get(ctx, &chat); err != nil {
 		return nil, err

@@ -13,7 +13,7 @@ func (u UseCase) GetAllChatsOfUser() GetAllChatsOfUserCmd {
 		u.logger.Info().Msg("Fetching all chats ...")
 		defer u.logger.Info().Msg("All chats fetched !")
 		//TODO: In the future, when the Database will be real, find another way to make this code return an empty array
-		all_chats, err := u.DB.GetAllChatsOfUser(ctx)
+		all_chats, err := u.DB.GetAllChatsOfUser(ctx, user_id)
 
 		if all_chats == nil {
 			return make([]*domain.Chat, 0), nil

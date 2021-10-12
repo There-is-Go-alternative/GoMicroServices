@@ -31,7 +31,7 @@ type Ad struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Price       uint   `json:"price"`
-	Picture     string `json:"picture"`
+	Pictures     []string `json:"pictures"`
 	UserId		string `json:"owner_user_id"`
 }
 

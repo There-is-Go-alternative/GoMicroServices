@@ -3,11 +3,16 @@ package database
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 
+	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
@@ -16,6 +21,8 @@ type FirebaseRealTimeDB struct {
 	App  *firebase.App
 	Conf *FirebaseConfig
 	DB   *firebaseDB.Client
+	Storage *storage.Client
+	Client *firestore.Client
 }
 
 var DefaultConf = &FirebaseConfig{
@@ -40,6 +47,14 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 	if err != nil {
 		return nil, err
 	}
+	firestore_client, err := app.Firestore(ctx)
+	if err != nil {
+		return nil, err
+	}
+	storage, err := storage.NewClient(ctx, opt)
+	if err != nil {
+		return nil, err
+	} 
 	db, err := app.DatabaseWithURL(ctx, conf.BaseConfig.DatabaseURL)
 	if err != nil {
 		return nil, err
@@ -48,7 +63,72 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 		App:  app,
 		Conf: conf,
 		DB:   db,
+		Storage: storage,
+		Client: firestore_client,
 	}, nil
+}
+
+type ImageStructure struct {
+	ImageName string `json:"imageName"`
+	URL       string `json:"url"`
+}
+
+func DownloadImage(url string) (io.ReadCloser, error) {
+    response, err := http.Get(url)
+    if err != nil {
+        return nil, err
+    }
+
+	return response.Body, nil
+}
+
+func UploadImage(m *FirebaseRealTimeDB, ctx context.Context, ad *domain.Ad) ([]string, error) {
+	lst := make([]string, 0)
+	for i, picture := range ad.Pictures {
+		image_name := fmt.Sprintf("%s_%d", ad.ID.String(), i)
+		url := fmt.Sprintf("%s/%s", "https://storage.cloud.google.com/gomicroservicedatabase-eu", image_name)
+		url_no_auth := "https://firebasestorage.googleapis.com/v0/b/gomicroservicedatabase-eu/o/" + image_name + "?alt=media"
+		lst = append(lst, url_no_auth)
+		wc := m.Storage.Bucket("gomicroservicedatabase-eu").Object(image_name).NewWriter(ctx)
+		body, err := DownloadImage(picture)
+
+		if err != nil {
+			return lst, err
+		}
+
+		// Tricks to make an image previewed on the firebase panel (from: https://stackoverflow.com/questions/62223854/how-to-upload-image-to-firebase-storage-using-golang)
+		id := uuid.New() 
+ 		wc.ObjectAttrs.Metadata = map[string]string{"firebaseStorageDownloadTokens": id.String()} 
+
+		_, err = io.Copy(wc, body)
+
+		if err != nil {
+			return lst, err
+		}
+
+		if err = wc.Close(); err != nil {
+			return lst, err
+		}
+
+		if err = body.Close(); err != nil {
+			return lst, err
+		}
+
+		imageStructure := ImageStructure{
+			ImageName: image_name,
+			URL:       url,
+		}
+
+		//TODO: Tricks to upload the files without waiting +30 seconds
+		go func() {
+			_, _, err = m.Client.Collection("image").Add(ctx, imageStructure)
+		}()
+
+		if err != nil {
+			return lst, err
+		}
+	}
+	return lst, nil
 }
 
 // Create add list of domain.Ad to the Firestore realtime database
@@ -59,7 +139,15 @@ func (m *FirebaseRealTimeDB) Create(ctx context.Context, ads ...*domain.Ad) erro
 
 	errs := xerrors.ErrList{}
 	for _, ad := range ads {
-		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
+		pictures, err := UploadImage(m, ctx, ad)
+
+		if err != nil {
+			errs.Add(err)
+			continue
+		}
+	
+		ad.Pictures = pictures
+		err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
 		if err != nil {
 			errs.Add(err)
 		}
@@ -87,7 +175,15 @@ func (m *FirebaseRealTimeDB) Update(ctx context.Context, ads ...*domain.Ad) erro
 	}
 	errs := xerrors.ErrList{}
 	for _, ad := range ads {
-		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
+		pictures, err := UploadImage(m, ctx, ad)
+
+		if err != nil {
+			errs.Add(err)
+			continue
+		}
+		ad.Pictures = pictures
+
+		err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
 		if err != nil {
 			errs.Add(err)
 		}
@@ -112,6 +208,7 @@ func (m *FirebaseRealTimeDB) ByID(ctx context.Context, ID domain.AdID) (*domain.
 			xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: xerrors.AdNotFound}, "ID {%v}", ID,
 		)
 	}
+
 	return &ad, nil
 }
 

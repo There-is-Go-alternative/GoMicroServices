@@ -7,7 +7,7 @@ import (
 type Config struct {
 	Host       string `json:"host,omitempty"`
 	Port       string `json:"port,omitempty"`
-	AdEndpoint string `json:"ad_endpoint,omitempty"`
+	AdEndpoint string `json:"ads_endpoint,omitempty"`
 }
 
 func ParseConfigFromPath(path string) (conf *Config, err error) {

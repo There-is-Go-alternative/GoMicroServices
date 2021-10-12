@@ -20,3 +20,5 @@
 
 # Firebase config
 *FirebaseCredentials.json
+
+.env

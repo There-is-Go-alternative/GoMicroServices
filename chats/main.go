@@ -91,9 +91,6 @@ func Firebase() {
 	signalCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	ctx, ctxCancel := context.WithCancel(signalCtx)
 	_ = ctxCancel
-	userA := account.Account{ID: "UserA"}
-	userB := account.Account{ID: "UserB"}
-	chatA := chats.Chat{ID: chats.ChatID("ChatA"), UsersIDs: []account.AccountID{userA.ID, userB.ID}}
 
 	// Initialising Chats Database
 	log.WithFields(log.Fields{
@@ -104,16 +101,47 @@ func Firebase() {
 		fmt.Printf("%+v\n", err)
 		os.Exit(42)
 	}
-	// _ = ChatsStorage
-	ChatsStorage.Create(ctx, chatA)
-	chat, err := ChatsStorage.ByID(ctx, chats.ChatID("ChatA"))
+
+	userA := account.Account{ID: "UserA"}
+	userB := account.Account{ID: "UserB"}
+	userC := account.Account{ID: "UserC"}
+	chatA := chats.Chat{ID: chats.ChatID("ChatA"), UsersIDs: []account.AccountID{userA.ID, userB.ID}}
+	chatB := chats.Chat{ID: chats.ChatID("ChatB"), UsersIDs: []account.AccountID{userC.ID, userB.ID}}
+	chatC := chats.Chat{ID: chats.ChatID("ChatC"), UsersIDs: []account.AccountID{userA.ID, userC.ID}}
+	chatD := chats.Chat{ID: chats.ChatID("ChatD"), UsersIDs: []account.AccountID{userA.ID, userB.ID, userC.ID}}
+	// messageA := chats.Message{ID: chats.MessageID("Message A to B"), ChatID: chatA.ID, Content: "hello :)", SenderID: userA.ID.String()}
+	// messageB := chats.Message{ID: chats.MessageID("Message C to B"), ChatID: chatB.ID, Content: "hello :)", SenderID: userC.ID.String()}
+	// messageC := chats.Message{ID: chats.MessageID("Message A to C"), ChatID: chatC.ID, Content: "hello :)", SenderID: userA.ID.String()}
+
+	err = ChatsStorage.Create(ctx, chatA)
 	if err != nil {
-		fmt.Printf("%+v\n", err)
-	} else {
-		fmt.Printf("%+v\n", chat)
+		fmt.Printf("Create ChatA error:\n%+v\nEnd\n", err)
 	}
+	err = ChatsStorage.Create(ctx, chatB)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Create ChatB error:\n%+v\nEnd\n", err)
+	}
+	err = ChatsStorage.Create(ctx, chatC)
+	if err != nil {
+		fmt.Printf("Create ChatC error:\n%+v\nEnd\n", err)
+	}
+	err = ChatsStorage.Create(ctx, chatD)
+	if err != nil {
+		fmt.Printf("Create ChatD error:\n%+v\nEnd\n", err)
+	}
+
+	listOfChats, err := ChatsStorage.All(ctx)
+	if err != nil {
+		fmt.Printf("List of chats error:\n%+v\nEnd\n", err)
+	} else {
+		fmt.Printf("List of chats:\n%+v\nEnd\n", listOfChats)
+	}
+
+	chatsOfUser, err := ChatsStorage.GetAllChatsOfUser(ctx, userA.ID.String())
+	if err != nil {
+		fmt.Printf("Chats of user error:\n%+v\nEnd\n", err)
+	} else {
+		fmt.Printf("Chats of user:\n%+v\nEnd\n", chatsOfUser)
 	}
 
 	// // Setup an error channel

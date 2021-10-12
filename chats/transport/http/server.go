@@ -38,7 +38,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	{
 		chat.POST("/", chatHandler.CreateChatHandler(uc.CreateChat()))
 		chat.GET("/:id", chatHandler.GetChatsByIDHandler(uc.GetChatById()))
-		chat.GET("/:user_id", chatHandler.GetAllChatsOfUserHandler(uc.GetAllChatsOfUser()))
+		chat.GET("/user/:user_id", chatHandler.GetAllChatsOfUserHandler(uc.GetAllChatsOfUser()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

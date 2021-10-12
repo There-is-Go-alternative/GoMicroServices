@@ -26,7 +26,7 @@ type GetChatByIdCmd func(ctx context.Context, id domain.ChatID) (*domain.Chat, e
 
 func (u UseCase) GetChatById() GetChatByIdCmd {
 	return func(ctx context.Context, id domain.ChatID) (*domain.Chat, error) {
-		u.logger.Info().Msgf("Fetching ad by id: %v", id)
+		u.logger.Info().Msgf("Fetching chat by id: %v", id)
 		defer u.logger.Info().Msg("All chats fetched !")
 		return u.DB.GetChatByID(ctx, id)
 	}

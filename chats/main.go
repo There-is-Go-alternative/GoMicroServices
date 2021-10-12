@@ -98,10 +98,20 @@ func Firebase() {
 	// Initialising Chats Database
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Ads Database ...")
+	}).Info("Setting up Chats Database ...")
 	ChatsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.ChatsDefaultConf)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		os.Exit(42)
+	}
 	// _ = ChatsStorage
 	ChatsStorage.Create(ctx, chatA)
+	chat, err := ChatsStorage.ByID(ctx, chats.ChatID("ChatA"))
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+	} else {
+		fmt.Printf("%+v\n", chat)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}

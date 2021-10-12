@@ -40,21 +40,7 @@ func ResponseSuccess(c *gin.Context, code int, message interface{}) {
 	})
 }
 
-// GetChatsHandler return the handler responsible for fetching all chats
-func (a Handler) GetChatsHandler(cmd usecase.GetAllChatsCmd) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		payload, err := cmd(c.Request.Context())
-
-		if err != nil {
-			a.logger.Error().Msg("Error in GET /chats")
-			ResponseError(c, http.StatusInternalServerError, InternalServerError)
-			return
-		}
-		ResponseSuccess(c, http.StatusOK, payload)
-	}
-}
-
-// GetChatsByIDHandler return the handler responsible for fetching a specific ad.
+// GetChatsByIDHandler return the handler responsible for fetching a specific chat.
 func (a Handler) GetChatsByIDHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -67,14 +53,14 @@ func (a Handler) GetChatsByIDHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc
 
 		if err != nil {
 			a.logger.Error().Msg("Error in GET by /chats/:id")
-			ResponseError(c, http.StatusBadRequest, "No ad found")
+			ResponseError(c, http.StatusBadRequest, "No chat found")
 			return
 		}
 		ResponseSuccess(c, http.StatusOK, payload)
 	}
 }
 
-// CreateChatHandler return the handler responsible for creating an ad.
+// CreateChatHandler return the handler responsible for creating a chat.
 func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		account, err := api.Authorize(c)
@@ -88,17 +74,17 @@ func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 			return
 		}
 
-		var ad usecase.CreateChatInput
-		err = c.BindJSON(&ad)
-		ad.UserId = string(account.ID)
+		var chat usecase.CreateChatInput
+		err = c.BindJSON(&chat)
+		chat.UserId = string(account.ID)
 		if err != nil {
-			a.logger.Error().Msgf("User CreateChatInput invalid: %v", ad)
+			a.logger.Error().Msgf("User CreateChatInput invalid: %v", chat)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
 			return
 		}
-		payload, err := cmd(c.Request.Context(), ad)
+		payload, err := cmd(c.Request.Context(), chat)
 		if err != nil {
-			a.logger.Error().Msgf("Error in POST create ad: %v", err)
+			a.logger.Error().Msgf("Error in POST create chat: %v", err)
 			ResponseError(c, http.StatusInternalServerError, InternalServerError)
 			return
 		}
@@ -106,68 +92,20 @@ func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 	}
 }
 
-// UpdateChatHandler return the handler responsible for updating an ad.
-func (a Handler) UpdateChatHandler(cmd usecase.UpdateChatCmd) gin.HandlerFunc {
+// GetChatsOfUseHandler return the handler responsible for fetching a user's chats.
+func (a Handler) GetChatsOfUserHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
+		id := c.Param("user_id")
 		if id == "" {
-			a.logger.Error().Msg("UpdateChatHandler: param ID missing.")
+			a.logger.Error().Msg("GetChatsOfUserHandler: param user_id missing.")
 			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
-		var ad usecase.UpdateChatInput
-		err := c.BindJSON(&ad)
-		ad.ID = domain.ChatID(id)
+		payload, err := cmd(c.Request.Context(), domain.ChatID(id))
 
 		if err != nil {
-			a.logger.Error().Msgf("User UpdateChatInput invalid: %v", ad)
-			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
-			return
-		}
-		payload, err := cmd(c.Request.Context(), ad)
-		if err != nil {
-			a.logger.Error().Msgf("Error in PATCH update ad: %v", err)
-			ResponseError(c, http.StatusInternalServerError, InternalServerError)
-			return
-		}
-		ResponseSuccess(c, http.StatusOK, payload)
-	}
-}
-
-// DeleteChatHandler return the handler responsible for deleting an ad.
-func (a Handler) DeleteChatHandler(cmd usecase.DeleteChatCmd) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		if id == "" {
-			a.logger.Error().Msg("DeleteChatHandler: param ID missing.")
-			ResponseError(c, http.StatusBadRequest, MissingIDParam)
-			return
-		}
-
-		payload, err := cmd(c.Request.Context(), usecase.DeleteChatInput{ID: domain.ChatID(id)})
-		if err != nil {
-			a.logger.Error().Msgf("Error in POST delete ad: %v", err)
-			ResponseError(c, http.StatusInternalServerError, InternalServerError)
-			return
-		}
-		ResponseSuccess(c, http.StatusAccepted, payload)
-	}
-}
-
-// DeleteChatHandler return the handler responsible for searcgubg an ad.
-func (a Handler) SearchChatHandler(cmd usecase.SearchChatCmd) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		content := c.Query("content")
-		if content == "" {
-			a.logger.Error().Msg("SearchChatHandler: param content missing.")
-			ResponseError(c, http.StatusBadRequest, MissingQueryContent)
-			return
-		}
-
-		payload, err := cmd(c.Request.Context(), usecase.SearchChatInput{Content: content})
-		if err != nil {
-			a.logger.Error().Msgf("Error in GET search ad: %v", err)
-			ResponseError(c, http.StatusInternalServerError, InternalServerError)
+			a.logger.Error().Msg("Error in GET by /chats/:user_id")
+			ResponseError(c, http.StatusBadRequest, "No chats found for this user")
 			return
 		}
 		ResponseSuccess(c, http.StatusOK, payload)

@@ -21,7 +21,7 @@ type Server struct {
 type useCase interface {
 	CreateChat() usecase.CreateChatCmd
 	GetChatById() usecase.GetChatByIdCmd
-	GetChatsOfUser() usecase.GetChatsOfUserCmd
+	GetAllChatsOfUser() usecase.GetAllChatsOfUserCmd
 }
 
 // TODO: change database by future Database interface
@@ -38,7 +38,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	{
 		chat.POST("/", chatHandler.CreateChatHandler(uc.CreateChat()))
 		chat.GET("/:id", chatHandler.GetChatsByIDHandler(uc.GetChatById()))
-		chat.GET("/:user_id", chatHandler.GetChatsOfUser(uc.GetChatsOfUser()))
+		chat.GET("/:user_id", chatHandler.GetAllChatsOfUserHandler(uc.GetAllChatsOfUser()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

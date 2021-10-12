@@ -63,7 +63,7 @@ func (a Handler) GetChatsByIDHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc
 // CreateChatHandler return the handler responsible for creating a chat.
 func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		account, err := api.Authorize(c)
+		_, err := api.Authorize(c)
 		//TODO fix error
 		if err != nil {
 			//TODO encapsulate function
@@ -76,7 +76,7 @@ func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 
 		var chat usecase.CreateChatInput
 		err = c.BindJSON(&chat)
-		chat.UserId = string(account.ID)
+		// chat.UserId = string(account.ID)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateChatInput invalid: %v", chat)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
@@ -93,7 +93,7 @@ func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 }
 
 // GetChatsOfUseHandler return the handler responsible for fetching a user's chats.
-func (a Handler) GetChatsOfUserHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc {
+func (a Handler) GetAllChatsOfUserHandler(cmd usecase.GetAllChatsOfUserCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("user_id")
 		if id == "" {
@@ -101,7 +101,7 @@ func (a Handler) GetChatsOfUserHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFu
 			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
-		payload, err := cmd(c.Request.Context(), domain.ChatID(id))
+		payload, err := cmd(c.Request.Context(), id)
 
 		if err != nil {
 			a.logger.Error().Msg("Error in GET by /chats/:user_id")

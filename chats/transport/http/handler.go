@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/chats/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/chats/transport/api"
 	"github.com/There-is-Go-alternative/GoMicroServices/chats/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -63,19 +62,19 @@ func (a Handler) GetChatsByIDHandler(cmd usecase.GetChatByIdCmd) gin.HandlerFunc
 // CreateChatHandler return the handler responsible for creating a chat.
 func (a Handler) CreateChatHandler(cmd usecase.CreateChatCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := api.Authorize(c)
-		//TODO fix error
-		if err != nil {
-			//TODO encapsulate function
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "You need to be logged in",
-			})
-			return
-		}
+		// _, err := api.Authorize(c)
+		// //TODO fix error
+		// if err != nil {
+		// 	//TODO encapsulate function
+		// 	c.JSON(http.StatusUnauthorized, gin.H{
+		// 		"success": false,
+		// 		"message": "You need to be logged in",
+		// 	})
+		// 	return
+		// }
 
 		var chat usecase.CreateChatInput
-		err = c.BindJSON(&chat)
+		err := c.BindJSON(&chat)
 		// chat.UserId = string(account.ID)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateChatInput invalid: %v", chat)

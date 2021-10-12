@@ -9,9 +9,9 @@ import (
 )
 
 type database interface {
-	GetAllChatsOfUser(ctx context.Context) ([]*domain.Chat, error)
+	GetAllChatsOfUser(ctx context.Context, user_id string) ([]*domain.Chat, error)
 	GetChatByID(ctx context.Context, id domain.ChatID) (*domain.Chat, error)
-	CreateChat(ctx context.Context, chats ...*domain.Chat) error
+	CreateChat(ctx context.Context, chats domain.Chat) error
 }
 
 type UseCase struct {

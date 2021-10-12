@@ -16,7 +16,7 @@ type CreateChatInput struct {
 
 func (u UseCase) CreateChat() CreateChatCmd {
 	return func(ctx context.Context, input CreateChatInput) (*domain.Chat, error) {
-		chat := &domain.Chat{UsersIDs: input.UsersIDs}
+		chat := domain.Chat{UsersIDs: input.UsersIDs}
 		ChatID, err := domain.NewChatID()
 		if err != nil {
 			return nil, err
@@ -28,6 +28,6 @@ func (u UseCase) CreateChat() CreateChatCmd {
 			}
 		}
 		err = u.DB.CreateChat(ctx, chat)
-		return chat, err
+		return &chat, err
 	}
 }

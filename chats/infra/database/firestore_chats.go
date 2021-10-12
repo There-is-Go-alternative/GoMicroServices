@@ -53,7 +53,7 @@ func (m *FirebaseRealTimeDB) GetAllChatsOfUser(ctx context.Context, ID string) (
 	lst := make([]*domain.Chat, 0, len(chat))
 	for _, a := range chat {
 		for _, b := range a.UsersIDs {
-			if b.String() == ID {
+			if b == ID {
 				lst = append(lst, a)
 				break
 			}

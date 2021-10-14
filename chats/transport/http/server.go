@@ -22,10 +22,12 @@ type useCase interface {
 	CreateChat() usecase.CreateChatCmd
 	GetChatById() usecase.GetChatByIdCmd
 	GetAllChatsOfUser() usecase.GetAllChatsOfUserCmd
+	CreateMessage() usecase.CreateMessageCmd
+	GetMessagesByChatID() usecase.GetMessagesByChatIDCmd
 }
 
 // TODO: change database by future Database interface
-func NewHttpServer(uc useCase, conf *config.Config) *Server {
+func NewChatsHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
 	router.Use(cors.Default())
 
@@ -34,7 +36,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	})
 	chatHandler := NewChatHandler()
 	// Grouping Chat routes with url specified in config (I.E: 'chat')
-	chat := router.Group(fmt.Sprintf("/%s", conf.ChatEndpoint))
+	chat := router.Group(fmt.Sprintf("/%s", conf.ChatsEndpoint))
 	{
 		chat.POST("/", chatHandler.CreateChatHandler(uc.CreateChat()))
 		chat.GET("/:id", chatHandler.GetChatsByIDHandler(uc.GetChatById()))
@@ -42,10 +44,33 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	}
 	return &Server{
 		Engine: &netHTTP.Server{
-			Addr:    fmt.Sprintf("%s:%s", conf.Host, conf.Port),
+			Addr:    fmt.Sprintf("%s:%s", conf.ChatsHost, conf.ChatsPort),
 			Handler: router,
 		},
-		logger: log.With().Str("service", "HTTP gin server").Logger(),
+		logger: log.With().Str("service", "Chats HTTP gin server").Logger(),
+	}
+}
+
+func NewMessagesHttpServer(uc useCase, conf *config.Config) *Server {
+	router := gin.Default()
+	router.Use(cors.Default())
+
+	router.GET("/health", func(c *gin.Context) {
+		c.Status(netHTTP.StatusOK)
+	})
+	messageHandler := NewMessageHandler()
+	// Grouping Chat routes with url specified in config (I.E: 'chat')
+	message := router.Group(fmt.Sprintf("/%s", conf.MessagesEndpoint))
+	{
+		message.POST("/", messageHandler.CreateMessageHandler(uc.CreateMessage()))
+		message.GET("/:id", messageHandler.GetMessagesByChatIDHandler(uc.GetMessagesByChatID()))
+	}
+	return &Server{
+		Engine: &netHTTP.Server{
+			Addr:    fmt.Sprintf("%s:%s", conf.MessageHost, conf.MessagePort),
+			Handler: router,
+		},
+		logger: log.With().Str("service", "Messages HTTP gin server").Logger(),
 	}
 }
 

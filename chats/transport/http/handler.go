@@ -22,7 +22,11 @@ type Handler struct {
 }
 
 func NewChatHandler() *Handler {
-	return &Handler{logger: log.With().Str("service", "Http Handler").Logger()}
+	return &Handler{logger: log.With().Str("service", "Chat Http Handler").Logger()}
+}
+
+func NewMessageHandler() *Handler {
+	return &Handler{logger: log.With().Str("service", "Message Http Handler").Logger()}
 }
 
 func ResponseError(c *gin.Context, code int, message interface{}) {
@@ -108,5 +112,57 @@ func (a Handler) GetAllChatsOfUserHandler(cmd usecase.GetAllChatsOfUserCmd) gin.
 			return
 		}
 		ResponseSuccess(c, http.StatusOK, payload)
+	}
+}
+
+// GetChatsByIDHandler return the handler responsible for fetching a specific chat.
+func (a Handler) GetMessagesByChatIDHandler(cmd usecase.GetMessagesByChatIDCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			a.logger.Error().Msg("GetMessagesByChatID: param ID missing.")
+			ResponseError(c, http.StatusBadRequest, MissingIDParam)
+			return
+		}
+		payload, err := cmd(c.Request.Context(), domain.ChatID(id))
+
+		if err != nil {
+			a.logger.Error().Msg("Error in GET by /messages/:id")
+			ResponseError(c, http.StatusBadRequest, "No message found")
+			return
+		}
+		ResponseSuccess(c, http.StatusOK, payload)
+	}
+}
+
+// CreateChatHandler return the handler responsible for creating a chat.
+func (a Handler) CreateMessageHandler(cmd usecase.CreateMessageCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// _, err := api.Authorize(c)
+		// //TODO fix error
+		// if err != nil {
+		// 	//TODO encapsulate function
+		// 	c.JSON(http.StatusUnauthorized, gin.H{
+		// 		"success": false,
+		// 		"message": "You need to be logged in",
+		// 	})
+		// 	return
+		// }
+
+		var message usecase.CreateMessageInput
+		err := c.BindJSON(&message)
+		// chat.UserId = string(account.ID)
+		if err != nil {
+			a.logger.Error().Msgf("User CreateMessageInput invalid: %v", message)
+			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
+			return
+		}
+		payload, err := cmd(c.Request.Context(), message)
+		if err != nil {
+			a.logger.Error().Msgf("Error in POST create chat: %v", err)
+			ResponseError(c, http.StatusInternalServerError, InternalServerError)
+			return
+		}
+		ResponseSuccess(c, http.StatusCreated, payload)
 	}
 }

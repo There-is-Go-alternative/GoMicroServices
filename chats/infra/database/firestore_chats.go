@@ -12,7 +12,7 @@ import (
 
 var ChatsDefaultConf = &FirebaseConfig{
 	CollectionName:    "chats",
-	ServiceAdsKeyPath: "infra/database/FirebaseCredentials.json",
+	ServiceAdsKeyPath: "FirebaseCredentials.json",
 	BaseConfig: &firebase.Config{
 		DatabaseURL: "https://gomicroservicedatabase-default-rtdb.firebaseio.com/",
 	},

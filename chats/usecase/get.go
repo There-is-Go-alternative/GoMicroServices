@@ -31,3 +31,13 @@ func (u UseCase) GetChatById() GetChatByIdCmd {
 		return u.DB.GetChatByID(ctx, id)
 	}
 }
+
+type GetMessagesByChatIDCmd func(ctx context.Context, id domain.ChatID) ([]*domain.Message, error)
+
+func (u UseCase) GetMessagesByChatID() GetMessagesByChatIDCmd {
+	return func(ctx context.Context, id domain.ChatID) ([]*domain.Message, error) {
+		u.logger.Info().Msgf("Fetching messages by chat id: %v", id)
+		defer u.logger.Info().Msg("All chats fetched !")
+		return u.DB.GetMessagesByChatID(ctx, id)
+	}
+}

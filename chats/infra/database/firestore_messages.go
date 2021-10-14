@@ -10,7 +10,7 @@ import (
 
 var MessagesDefaultConf = &FirebaseConfig{
 	CollectionName:    "messages",
-	ServiceAdsKeyPath: "infra/database/FirebaseCredentials.json",
+	ServiceAdsKeyPath: "FirebaseCredentials.json",
 	BaseConfig: &firebase.Config{
 		DatabaseURL: "https://gomicroservicedatabase-default-rtdb.firebaseio.com/",
 	},
@@ -27,14 +27,17 @@ func (m *FirebaseRealTimeDB) CreateMessage(ctx context.Context, message domain.M
 }
 
 // All return all domain.Message in the Firestore realtime database
-func (m *FirebaseRealTimeDB) AllMessagesOfChat(ctx context.Context) ([]*domain.Message, error) {
+func (m *FirebaseRealTimeDB) GetMessagesByChatID(ctx context.Context, id domain.ChatID) ([]*domain.Message, error) {
 	var message map[string]*domain.Message
 	if err := m.DB.NewRef(m.Conf.CollectionName).Get(ctx, &message); err != nil {
 		return nil, err
 	}
 	lst := make([]*domain.Message, 0, len(message))
 	for _, a := range message {
-		lst = append(lst, a)
+		if a.ChatID == id.String() {
+			lst = append(lst, a)
+		}
+
 	}
 	return lst, nil
 }

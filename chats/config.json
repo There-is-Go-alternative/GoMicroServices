@@ -1,5 +1,8 @@
 {
-    "Host": "0.0.0.0",
-    "Port": "7569",
-    "chats_endpoint": "chats"
+    "chats_host": "0.0.0.0",
+    "chats_port": "7569",
+    "chats_endpoint": "chats",
+    "messages_host": "0.0.0.0",
+    "messages_port": "7420",
+    "messages_endpoint": "messages"
 }

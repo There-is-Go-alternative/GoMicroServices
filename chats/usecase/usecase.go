@@ -12,6 +12,8 @@ type database interface {
 	GetAllChatsOfUser(ctx context.Context, user_id string) ([]*domain.Chat, error)
 	GetChatByID(ctx context.Context, id domain.ChatID) (*domain.Chat, error)
 	CreateChat(ctx context.Context, chats domain.Chat) error
+	GetMessagesByChatID(ctx context.Context, id domain.ChatID) ([]*domain.Message, error)
+	CreateMessage(ctx context.Context, message domain.Message) error
 }
 
 type UseCase struct {

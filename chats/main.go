@@ -50,18 +50,34 @@ func Firebase() {
 		fmt.Printf("%+v\n", err)
 		os.Exit(42)
 	}
+	// Initialising Messages Database
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Setting up Messages Database ...")
+	MessagesStorage, err := database.NewFirebaseRealTimeDB(ctx, database.MessagesDefaultConf)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		os.Exit(42)
+	}
 
 	// Initialising Chats UseCase
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads UseCase ...")
 	chatsUseCase := usecase.NewGetUseCase(ChatsStorage)
+	messagesUseCase := usecase.NewGetUseCase(MessagesStorage)
 
 	// Initialising Gin Server
 	log.WithFields(log.Fields{
 		"stage": "setup",
-	}).Info("Setting up Ads Http handler ...")
-	ginServer := http.NewHttpServer(chatsUseCase, conf)
+	}).Info("Setting up Chats Http handler ...")
+	chatsGinServer := http.NewChatsHttpServer(chatsUseCase, conf)
+
+	// Initialising Gin Server
+	log.WithFields(log.Fields{
+		"stage": "setup",
+	}).Info("Setting up Messages Http handler ...")
+	messagesGinServer := http.NewMessagesHttpServer(messagesUseCase, conf)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...
@@ -71,8 +87,12 @@ func Firebase() {
 	}
 	services := []service{
 		{
-			name: "Http Server",
-			fct:  ginServer.Run,
+			name: "Chats Http Server",
+			fct:  chatsGinServer.Run,
+		},
+		{
+			name: "Messages Http Server",
+			fct:  messagesGinServer.Run,
 		},
 	}
 
@@ -108,15 +128,6 @@ func Firebase() {
 		time.Sleep(time.Second * time.Duration(*shutdownTimeOut))
 		os.Exit(1)
 	}
-	// Initialising Messages Database
-	// log.WithFields(log.Fields{
-	// 	"stage": "setup",
-	// }).Info("Setting up Messages Database ...")
-	// MessagesStorage, err := database.NewFirebaseRealTimeDB(ctx, database.MessagesDefaultConf)
-	// if err != nil {
-	// 	fmt.Printf("%+v\n", err)
-	// 	os.Exit(42)
-	// }
 }
 
 func main() {

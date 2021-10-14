@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -12,9 +14,11 @@ func NewChatID() (ChatID, error) {
 }
 
 // Validate check for ChatID integrity
-func (id ChatID) Validate() bool {
-	// Need to find a way to check if the UUID is valid
-	return true
+func (id ChatID) Validate() error {
+	if _, err := uuid.Parse(id.String()); err != nil {
+		return fmt.Errorf("ID (%v) is invalid: {%v}", id, err)
+	}
+	return nil
 }
 
 // Equal check for ChatID equality
@@ -34,7 +38,7 @@ type Chat struct {
 
 // Validate check presence of minimal data required for an Chat.
 func (c Chat) Validate() bool {
-	return c.ID.Validate()
+	return c.ID.Validate() != nil
 }
 
 func (c Chat) String() string {

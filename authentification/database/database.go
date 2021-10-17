@@ -68,7 +68,7 @@ func (db *MongoDB) FindByID(ctx context.Context, id string) (domain.Auth, error)
 	return auth, nil
 }
 
-func (db *MongoDB) Save(ctx context.Context, user domain.Register) (*mongo.InsertOneResult, error) {
+func (db *MongoDB) Save(ctx context.Context, user domain.Auth) (*mongo.InsertOneResult, error) {
 	register, err := db.collection.InsertOne(context.Background(), user)
 
 	if err != nil {

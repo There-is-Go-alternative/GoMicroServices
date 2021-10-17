@@ -14,7 +14,7 @@ import (
 type Database interface {
 	FindByEmail(context.Context, string) (domain.Auth, error)
 	FindByID(context.Context, string) (domain.Auth, error)
-	Save(context.Context, domain.Register) (*mongo.InsertOneResult, error)
+	Save(context.Context, domain.Auth) (*mongo.InsertOneResult, error)
 }
 
 type UseCase struct {

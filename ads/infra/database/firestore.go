@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
@@ -63,9 +64,10 @@ func NewDatabase(ctx context.Context, conf *FirebaseConfig) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	client := search.NewClient("XNO5KPB1UR", "dacfd6ef52c850d040d5d86fcbbdb4b1")
+	/* INIT SEARCH ENGINE */
+	client := search.NewClient(os.Getenv("AGOLIA_APP_ID"), os.Getenv("AGOLIA_API_KEY"))
 	index := client.InitIndex("gomicroservices")
+
 	return &Database{
 		App:  app,
 		Conf: conf,

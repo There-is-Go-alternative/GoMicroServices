@@ -34,5 +34,11 @@ func CreateFixtures(ctx context.Context, fixtures []*domain.Account, db usecase.
 		a.ID = *id
 	}
 	log.Info().Msgf("loading fixtures ...")
-	return db.Create(ctx, fixtures...)
+	var err error
+	for _, f := range fixtures {
+		if _, err = db.Create(ctx, f); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -9,17 +9,22 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"strings"
 )
 
+const AccountIDKey = "accountID"
+
 type Handler struct {
-	APIKey string
-	logger zerolog.Logger
+	APIKey      string
+	AuthService usecase.AuthService
+	logger      zerolog.Logger
 }
 
-func NewAccountHandler(APIKey string) *Handler {
+func NewAccountHandler(APIKey string, authService usecase.AuthService) *Handler {
 	return &Handler{
-		APIKey: APIKey,
-		logger: log.With().Str("service", "Http Handler").Logger(),
+		APIKey:      APIKey,
+		AuthService: authService,
+		logger:      log.With().Str("service", "Http Handler").Logger(),
 	}
 }
 
@@ -181,18 +186,47 @@ func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerF
 	}
 }
 
+// IsAdminHandler.
+func (a Handler) IsAdminHandler(cmd usecase.IsAdminCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var id usecase.IsAdminInput
+		err := c.BindJSON(&id)
+
+		payload, err := cmd(c.Request.Context(), id)
+		if err != nil {
+			a.logger.Error().Msgf("Error in Is Admin : %v", err)
+			// TODO: better error
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    payload,
+		})
+	}
+}
+
 func (a Handler) Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		APIKey := c.GetHeader("Authorization")
-		if APIKey == "" {
+		token := c.GetHeader("Authorization")
+		if token == "" {
 			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("auth token missing"))
 			return
 		}
-		if APIKey != a.APIKey {
-			// TODO: Get Real Token
-			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("APIKey Invalid"))
+		if token == a.APIKey {
 			return
 		}
-		// TODO: Get Real Token
+		tokenSplitted := strings.Split(token, "Bearer ")
+		if len(tokenSplitted) != 2 {
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+		accountID, err := a.AuthService.Authorize(tokenSplitted[1])
+		if err != nil {
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("auth token is not valid"))
+			return
+		}
+		c.Set(AccountIDKey, accountID)
 	}
 }

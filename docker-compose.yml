@@ -45,22 +45,15 @@ services:
     depends_on:
       - postgres_db
       - account_prisma_migration
-
     # Build Default Dockerfile in "account" directory.
     build:
       context: account
       dockerfile: build/Dockerfile
       target: runner
-    # using env file as configuration for non-critical variables
-#    env_file:
-#      - account/.env
     volumes:
-#      # Keeping Logs for Debug/Monitoring purposes.
-#      - ./logs:/logs
       # Caching go modules for faster builds.
       - account_go-modules:/go
     restart: always
-#    command: "wait-for-it.sh 'postgres_db:5432' && ./account"
 
     environment:
 #      # Port on which backend is running
@@ -70,8 +63,6 @@ services:
       CONF_PATH: "${ACCOUNT_CONF_PATH}"
       LOG_FORMATTER: "${ACCOUNT_LOG_FORMATTER}"
       BIN_ARGS: "${ACCOUNT_LOG_FORMATTER}"
-      # Directory to puts logs in.
-      LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
       AUTH_URL: "auth:7003"
       BALANCE_URL: "balance:7004"
@@ -197,8 +188,6 @@ services:
       - "${AUTH_PORT}:${AUTH_PORT}"
     networks:
       - auth
-      - ads
-      - account
 
 
 networks:

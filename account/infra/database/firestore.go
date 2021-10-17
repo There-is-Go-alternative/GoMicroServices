@@ -57,23 +57,15 @@ func NewFirebaseRealTimeDB(ctx context.Context, conf *FirebaseConfig) (*Firebase
 }
 
 // Create add list of domain.Account to the MemMapStorage
-func (m *FirebaseRealTimeDB) Create(ctx context.Context, accounts ...*domain.Account) error {
-	if len(accounts) == 0 {
-		return nil
+func (m *FirebaseRealTimeDB) Create(ctx context.Context, account *domain.Account) error {
+	if err := m.DB.NewRef(m.formatPath(account.ID.String())).Set(ctx, account); err != nil {
+		return err
 	}
-
-	var errs []error
-	for _, acc := range accounts {
-		err := m.DB.NewRef(m.formatPath(acc.ID.String())).Set(ctx, acc)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return xerrors.Concat(errs...)
+	return nil
 }
 
 // Update a list of domain.Account to the MemMapStorage
-func (m *FirebaseRealTimeDB) Update(ctx context.Context, accounts ...*domain.Account) error {
+func (m *FirebaseRealTimeDB) Update(ctx context.Context, account *domain.Account) error {
 	// Transaction update handler: This may get invoked multiple times due to retries.
 	updateAccount := func(a *domain.Account) func(tn firebaseDB.TransactionNode) (interface{}, error) {
 		return func(tn firebaseDB.TransactionNode) (interface{}, error) {
@@ -90,14 +82,11 @@ func (m *FirebaseRealTimeDB) Update(ctx context.Context, accounts ...*domain.Acc
 		}
 	}
 
-	var errs []error
-	for _, a := range accounts {
-		ref := m.DB.NewRef(m.formatPath(a.ID.String()))
-		if err := ref.Transaction(ctx, updateAccount(a)); err != nil {
-			errs = append(errs, err)
-		}
+	ref := m.DB.NewRef(m.formatPath(account.ID.String()))
+	if err := ref.Transaction(ctx, updateAccount(account)); err != nil {
+		return err
 	}
-	return xerrors.Concat(errs...)
+	return nil
 }
 
 // ByID Retrieve the info that match "id".
@@ -174,19 +163,13 @@ func (m *FirebaseRealTimeDB) All(ctx context.Context) ([]*domain.Account, error)
 }
 
 // Remove a domain.Account from the MemMapStorage
-func (m *FirebaseRealTimeDB) Remove(ctx context.Context, accounts ...*domain.Account) error {
-	if len(accounts) <= 0 {
-		return nil
-	}
+func (m *FirebaseRealTimeDB) Remove(ctx context.Context, account *domain.Account) error {
 
-	var errs []error
-	for _, acc := range accounts {
-		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, acc.ID.String())).Delete(ctx)
-		if err != nil {
-			errs = append(errs, err)
-		}
+	err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, account.ID.String())).Delete(ctx)
+	if err != nil {
+		return err
 	}
-	return xerrors.Concat(errs...)
+	return nil
 }
 
 func (m FirebaseRealTimeDB) formatPath(child string) string {

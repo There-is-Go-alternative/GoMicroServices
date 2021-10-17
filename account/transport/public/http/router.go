@@ -17,10 +17,11 @@ type AccountUseCase interface {
 	DeleteAccount() usecase.DeleteAccountCmd
 	PatchAccount() usecase.PatchAccountCmd
 	UpdateAccount() usecase.UpdateAccountCmd
+	IsAdmin() usecase.IsAdminCmd
 }
 
-func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Config) {
-	accountHandler := NewAccountHandler(conf.APIKey)
+func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Config, authService usecase.AuthService) {
+	accountHandler := NewAccountHandler(conf.APIKey, authService)
 
 	// Configuring CORS
 	router.Use(cors.Default())
@@ -37,5 +38,6 @@ func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Conf
 		account.PATCH("/:id", accountHandler.Authorize(), accountHandler.PatchAccountHandler(uc.PatchAccount()))
 		account.PUT("/:id", accountHandler.Authorize(), accountHandler.PutAccountHandler(uc.UpdateAccount()))
 		account.DELETE("/:id", accountHandler.Authorize(), accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
+		account.GET("/admin", accountHandler.Authorize(), accountHandler.IsAdminHandler(uc.IsAdmin()))
 	}
 }

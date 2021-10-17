@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d74687ef-97ab-49e5-90f1-ed2c3d17500c",
+		"_postman_id": "b1e26318-81ea-4093-a73f-6986e0c7bd06",
 		"name": "Basic_Calls",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -30,6 +30,40 @@
 							"raw": "{{ACCOUNT_URL}}/health",
 							"host": [
 								"{{ACCOUNT_URL}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chats Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{CHATS_URL}}/health",
+							"host": [
+								"{{CHATS_URL}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Messages Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{MESSAGES_URL}}/health",
+							"host": [
+								"{{MESSAGES_URL}}"
 							],
 							"path": [
 								"health"
@@ -287,6 +321,116 @@
 							],
 							"path": [
 								"{{TEST_USER_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Chats",
+			"item": [
+				{
+					"name": "Get a chat by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:7569/chats/ffe500dc-b149-4fea-a336-6553eef11e62",
+							"host": [
+								"localhost"
+							],
+							"port": "7569",
+							"path": [
+								"chats",
+								"ffe500dc-b149-4fea-a336-6553eef11e62"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All chats of user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:7569/chats/user/1",
+							"host": [
+								"localhost"
+							],
+							"port": "7569",
+							"path": [
+								"chats",
+								"user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a new chat",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"users_ids\": [\"3\", \"2\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{CHATS_URL}}/chats",
+							"host": [
+								"{{CHATS_URL}}"
+							],
+							"path": [
+								"chats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"chat_id\":\"ffe500dc-b149-4fea-a336-6553eef11e62\",\n\"content\":\"Test\",\n\"sender_id\":\"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MESSAGES_URL}}",
+							"host": [
+								"{{MESSAGES_URL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all messages of chat",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{MESSAGES_URL}}/ffe500dc-b149-4fea-a336-6553eef11e62",
+							"host": [
+								"{{MESSAGES_URL}}"
+							],
+							"path": [
+								"ffe500dc-b149-4fea-a336-6553eef11e62"
 							]
 						}
 					},

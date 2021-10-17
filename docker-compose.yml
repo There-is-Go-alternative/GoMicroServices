@@ -151,6 +151,28 @@ services:
       - funds
       - postgres_db
 
+  chats:
+    image: docker.io/damienbernard42/gomicroservices_chats
+    container_name: chats_service
+    build:
+      context: chats
+      dockerfile: build/Dockerfile
+      target: runner
+    env_file:
+      - chats/.env
+    volumes:
+      - chats_go-modules:/go
+    restart: always
+    environment:
+      LOGS_DIR: "/logs"
+      DEBUG_MODE: ${DEBUG_MODE}
+    ports:
+      - "7569:7569"
+      - "7420:7420"
+    networks:
+      - chats
+      - account
+
 networks:
   postgres_db:
     driver: bridge
@@ -162,8 +184,11 @@ networks:
     driver: bridge
   funds:
     driver: bridge
+  chats:
+    driver: bridge
 
 volumes:
   account_go-modules: {}
   ads_go-modules: {}
   funds_go-modules: {}
+  chats_go-modules: {}

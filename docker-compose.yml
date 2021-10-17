@@ -96,8 +96,7 @@ services:
       - ads_go-modules:/go
     restart: always
     environment:
-      LOGS_DIR: "/logs"
-      DEBUG_MODE: ${DEBUG_MODE}
+      CONF_PATH: "${ADS_CONF_PATH}"
     ports:
       - "7501:7501"
     networks:

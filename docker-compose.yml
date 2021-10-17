@@ -160,12 +160,11 @@ services:
       context: chats
       dockerfile: build/Dockerfile
       target: runner
-    env_file:
-      - chats/.env
     volumes:
       - chats_go-modules:/go
     restart: always
     environment:
+      CONF_PATH: "${CHATS_CONF_PATH}"
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
     ports:

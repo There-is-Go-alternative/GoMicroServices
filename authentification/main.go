@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/rs/zerolog/log"
 	"os"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/database"
@@ -15,6 +16,7 @@ func main() {
 		os.Getenv("MONGO_COLLECTION"),
 		os.Getenv("MONGO_URI"))
 	if err != nil {
+		log.Fatal().Err(err).Msg("Error when connecting to DB")
 		return
 	}
 	authUseCase := usecase.NewUseCase(db)
@@ -25,5 +27,6 @@ func main() {
 	}()
 	err = <-errc
 	if err != nil {
+		log.Fatal().Err(err).Msg("Error when running service")
 	}
 }

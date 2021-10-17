@@ -33,7 +33,10 @@ func (a Handler) GetAllAccountsHandler(cmd usecase.GetAllAccountsCmd) gin.Handle
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -58,7 +61,10 @@ func (a Handler) GetAccountsByIDHandler(cmd usecase.GetAccountByIDCmd) gin.Handl
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -80,7 +86,10 @@ func (a Handler) CreateAccountHandler(cmd usecase.CreateAccountCmd) gin.HandlerF
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusCreated, payload)
+		c.JSON(http.StatusCreated, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -109,7 +118,10 @@ func (a Handler) PatchAccountHandler(cmd usecase.PatchAccountCmd) gin.HandlerFun
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusCreated, payload)
+		c.JSON(http.StatusCreated, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -138,7 +150,10 @@ func (a Handler) PutAccountHandler(cmd usecase.UpdateAccountCmd) gin.HandlerFunc
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusCreated, payload)
+		c.JSON(http.StatusCreated, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -159,7 +174,10 @@ func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerF
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusOK, payload)
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    payload,
+		})
 	}
 }
 
@@ -167,7 +185,7 @@ func (a Handler) Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		APIKey := c.GetHeader("Authorization")
 		if APIKey == "" {
-			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("Auth token missing"))
+			_ = c.AbortWithError(http.StatusUnauthorized, errors.New("auth token missing"))
 			return
 		}
 		if APIKey != a.APIKey {

@@ -1,15 +1,15 @@
 #######################################################################################################################
 # Start from golang base image
-FROM golang:1.17.2-buster AS builder
+FROM golang:1.17-alpine AS builder
 
 # Add Image info
 LABEL name='Golang 1.17 (alpine) Image'
-LABEL maintainer="Naoufel Berrada <hello@naoufel.co>"
+LABEL maintainer="Okil Saber LAKHDARI <lakhsaber@gmail.com>"
 LABEL version="1.0"
-LABEL description="Funds for GoMicroServices project @ Epitech"
+LABEL description="Temporary Image for Multi stage usage in GoMicroServices"
 
 # Set the current working directory inside the container
-WORKDIR /funds_service
+WORKDIR /chats_service
 
 # Copy go mod and sum files
 COPY go.mod go.sum ./
@@ -18,26 +18,19 @@ COPY go.mod go.sum ./
 RUN go mod download
 #RUN go mod vendor
 
-# https://github.com/prisma/prisma-client-go/blob/main/docs/deploy.md
-# prefetch the binaries, so that they will be cached and not downloaded on each change
-RUN go run github.com/prisma/prisma-client-go prefetch
-
-
 # Copy the source from the current directory to the working Directory inside the container
 COPY . .
 
-RUN go generate ./...
-
-RUN go build -o funds .
+RUN go build -o chats .
 
 #######################################################################################################################
 # Start from builder stage
 FROM builder as runner
 
 # Set the current working directory inside the container
-WORKDIR /funds_service
+WORKDIR /chats_service
 
 # Copy Built binary
-COPY --from=builder /funds_service/funds .
+COPY --from=builder /chats_service/chats .
 
-CMD ./funds
+CMD ./chats

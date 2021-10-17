@@ -30,6 +30,10 @@ func (u UseCase) CreateAd() CreateAdCmd {
 			return nil, internal.NewInternalError(internal.BadRequest, internal.BadRequestMsg)
 		}
 		err = u.DB.Create(ctx, ad)
-		return ad, err
+
+		if err != nil {
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
+		}
+		return ad, nil
 	}
 }

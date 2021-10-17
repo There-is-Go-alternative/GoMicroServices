@@ -12,10 +12,8 @@ import (
 	firebase "firebase.google.com/go"
 	firebaseDB "firebase.google.com/go/db"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
 
@@ -142,50 +140,39 @@ func UploadImage(m *Database, ctx context.Context, ad *domain.Ad) ([]string, err
 }
 
 // Create add list of domain.Ad to the Firestore realtime database
-func (m *Database) Create(ctx context.Context, ads ...*domain.Ad) error {
-	if len(ads) == 0 {
-		return nil
+func (m *Database) Create(ctx context.Context, ad *domain.Ad) error {
+	pictures, err := UploadImage(m, ctx, ad)
+
+	if err != nil {
+		return err
 	}
 
-	errs := xerrors.ErrList{}
-	for _, ad := range ads {
-		pictures, err := UploadImage(m, ctx, ad)
-
-		if err != nil {
-			errs.Add(err)
-			continue
-		}
-
-		ad.Pictures = pictures
-		err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
-		if err != nil {
-			errs.Add(err)
-		}
-
-		/* Add to search engine */
-		_, err = m.Algolia.SaveObjects(Object{
-			"objectID": ad.ID,
-			"id": ad.ID,
-			"title": ad.Title,
-			"description": ad.Description,
-			"price": ad.Price,
-			"pictures": ad.Pictures,
-			"owner_user_id": ad.UserId,
-			"state": ad.State,
-		})
-		if err != nil {
-			errs.Add(err)
-		}
+	ad.Pictures = pictures
+	err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Set(ctx, ad)
+	if err != nil {
+		return err
 	}
 
-	if !errs.Nil() {
-		return errs
+	/* Add to search engine */
+	_, err = m.Algolia.SaveObjects(Object{
+		"objectID": ad.ID,
+		"id": ad.ID,
+		"title": ad.Title,
+		"description": ad.Description,
+		"price": ad.Price,
+		"pictures": ad.Pictures,
+		"owner_user_id": ad.UserId,
+		"state": ad.State,
+	})
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
 // Update a list of domain.Ad to the Firestore realtime database
-func (m *Database) Update(ctx context.Context, ads ...*domain.Ad) error {
+func (m *Database) Update(ctx context.Context, ad *domain.Ad) error {
 	adTransaction := func(ad *domain.Ad) func(transaction firebaseDB.TransactionNode) (interface{}, error) {
 		return func(transaction firebaseDB.TransactionNode) (interface{}, error) {
 			var new_ad domain.Ad
@@ -198,40 +185,34 @@ func (m *Database) Update(ctx context.Context, ads ...*domain.Ad) error {
 			return new_ad, nil
 		}
 	}
-	errs := xerrors.ErrList{}
-	for _, ad := range ads {
-		pictures, err := UploadImage(m, ctx, ad)
 
-		if err != nil {
-			errs.Add(err)
-			continue
-		}
-		ad.Pictures = pictures
+	pictures, err := UploadImage(m, ctx, ad)
 
-		err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
-		if err != nil {
-			errs.Add(err)
-		}
+	if err != nil {
+		return err
+	}
+	ad.Pictures = pictures
 
-		/* Update to search engine */
-		_, err = m.Algolia.PartialUpdateObjects(Object{
-			"objectID": ad.ID,
-			"id": ad.ID,
-			"title": ad.Title,
-			"description": ad.Description,
-			"price": ad.Price,
-			"pictures": ad.Pictures,
-			"owner_user_id": ad.UserId,
-			"state": ad.State,
-		})
-		if err != nil {
-			errs.Add(err)
-		}
+	err = m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Transaction(ctx, adTransaction(ad))
+	if err != nil {
+		return err
 	}
 
-	if !errs.Nil() {
-		return errs
+	/* Update to search engine */
+	_, err = m.Algolia.PartialUpdateObjects(Object{
+		"objectID": ad.ID,
+		"id": ad.ID,
+		"title": ad.Title,
+		"description": ad.Description,
+		"price": ad.Price,
+		"pictures": ad.Pictures,
+		"owner_user_id": ad.UserId,
+		"state": ad.State,
+	})
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
@@ -244,9 +225,7 @@ func (m *Database) ByID(ctx context.Context, ID domain.AdID) (*domain.Ad, error)
 	}
 
 	if ad.ID == "" {
-		return nil, errors.Wrapf(
-			xerrors.ErrorWithCode{Code: xerrors.ResourceNotFound, Err: xerrors.AdNotFound}, "ID {%v}", ID,
-		)
+		return nil, fmt.Errorf("ad not found")
 	}
 
 	return &ad, nil
@@ -266,28 +245,18 @@ func (m *Database) All(ctx context.Context) ([]*domain.Ad, error) {
 }
 
 // Remove a domain.Ad from the Firestore realtime database
-func (m *Database) Remove(ctx context.Context, ads ...*domain.Ad) error {
-	if len(ads) <= 0 {
-		return nil
+func (m *Database) Remove(ctx context.Context, ad *domain.Ad) error {
+	err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Delete(ctx)
+	if err != nil {
+		return err
 	}
 
-	errs := xerrors.ErrList{}
-	for _, ad := range ads {
-		err := m.DB.NewRef(fmt.Sprintf("%v/%v", m.Conf.CollectionName, ad.ID.String())).Delete(ctx)
-		if err != nil {
-			errs.Add(err)
-		}
-
-		/* Delete to search engine */
-		_, err = m.Algolia.DeleteObject(ad.ID.String())
-		if err != nil {
-			errs.Add(err)
-		}
+	/* Delete to search engine */
+	_, err = m.Algolia.DeleteObject(ad.ID.String())
+	if err != nil {
+		return err
 	}
 
-	if !errs.Nil() {
-		return errs
-	}
 	return nil
 }
 

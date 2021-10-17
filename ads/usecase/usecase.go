@@ -11,9 +11,9 @@ import (
 type database interface {
 	All(ctx context.Context) ([]*domain.Ad, error)
 	ByID(ctx context.Context, id domain.AdID) (*domain.Ad, error)
-	Create(ctx context.Context, ads ...*domain.Ad) error
-	Remove(ctx context.Context, ads ...*domain.Ad) error
-	Update(ctx context.Context, ad ...*domain.Ad) error
+	Create(ctx context.Context, ad *domain.Ad) error
+	Remove(ctx context.Context, ad *domain.Ad) error
+	Update(ctx context.Context, ad *domain.Ad) error
 	Search(ctx context.Context, content string) ([]domain.Ad, error)
 }
 

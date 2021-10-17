@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 	"github.com/imdario/mergo"
 )
 
@@ -24,13 +24,13 @@ func (u UseCase) UpdateAd() UpdateAdCmd {
 
 		err = mergo.Merge(ad, &input.Ad, mergo.WithOverride)
 		if err != nil {
-			return nil, xerrors.ErrorWithCode{Code: xerrors.CodeInvalidData, Err: err}
+			return nil, internal.NewInternalError(internal.BadRequest, internal.BadRequestMsg)
 		}
 
 		err = u.DB.Update(ctx, ad)
 
 		if err != nil {
-			return nil, xerrors.ErrorWithCode{Code: xerrors.CodeInvalidData, Err: err}
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
 		}
 
 		return ad, err

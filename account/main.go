@@ -58,8 +58,6 @@ func main() {
 
 	// Initialising Account Database
 	setupContext.Info("Setting up Account Database ...")
-	//accountStorage := database.NewAccountMemMapStorage()
-	//accountStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
 	accountStorage, err := infraDB.NewPrismaDB()
 	if err != nil {
 		setupContext.Fatal("When initialising Acccount storage: %v", err)

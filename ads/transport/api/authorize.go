@@ -62,7 +62,7 @@ func Authorize(c *gin.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	if new_account_response.Data.UserID == "" {
 		return "", xerrors.AuthorizationError
 	}

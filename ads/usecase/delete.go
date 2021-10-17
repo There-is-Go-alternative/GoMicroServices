@@ -14,8 +14,12 @@ type DeleteAdInput struct {
 
 func (u UseCase) DeleteAd() DeleteAdCmd {
 	return func(ctx context.Context, input DeleteAdInput) (*domain.Ad, error) {
-		ad := domain.Ad{ID: input.ID}
-		err := u.DB.Remove(ctx, &ad)
-		return &ad, err
+		ad, err := u.DB.ByID(ctx, input.ID)
+
+		if err != nil {
+			return nil, nil
+		}
+		err = u.DB.Remove(ctx, ad)
+		return ad, err
 	}
 }

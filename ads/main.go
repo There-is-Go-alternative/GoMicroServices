@@ -46,7 +46,7 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads Database ...")
-	adsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	adsStorage, err := database.NewDatabase(ctx, database.DefaultConf)
 	if err != nil {
 		log.Fatal(err)
 	}

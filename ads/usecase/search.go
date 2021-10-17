@@ -2,34 +2,26 @@ package usecase
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
 )
 
-type SearchAdCmd func(ctx context.Context, input SearchAdInput) ([]*domain.Ad, error)
+type SearchAdCmd func(ctx context.Context, input SearchAdInput) ([]domain.Ad, error)
 
 type SearchAdInput struct {
 	Content string `json:"content" binding:"required"`
 }
 
 func (u UseCase) SearchAd() SearchAdCmd {
-	return func(ctx context.Context, input SearchAdInput) ([]*domain.Ad, error) {
-		content := strings.ToLower(input.Content)
-		adList, err := u.DB.All(ctx)
+	return func(ctx context.Context, input SearchAdInput) ([]domain.Ad, error) {
+		content := input.Content
 
+		res, err := u.DB.Search(ctx, content)
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
-
-		var newAdList []*domain.Ad
-		for _, ad := range adList {
-			if strings.Contains(strings.ToLower(ad.Title), content) {
-				 newAdList = append(newAdList, ad)
-			} else if strings.Contains(strings.ToLower(ad.Description), content) {
-				newAdList = append(newAdList, ad)
-		   }
-		}
-		return newAdList, nil
+		return res, nil
 	}
 }

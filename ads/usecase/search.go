@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 )
 
 type SearchAdCmd func(ctx context.Context, input SearchAdInput) ([]domain.Ad, error)
@@ -19,9 +19,9 @@ func (u UseCase) SearchAd() SearchAdCmd {
 
 		res, err := u.DB.Search(ctx, content)
 		if err != nil {
-			fmt.Println(err)
-			return nil, err
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
 		}
+
 		return res, nil
 	}
 }

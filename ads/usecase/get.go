@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 )
 
 type GetAllAdsCmd func(ctx context.Context) ([]*domain.Ad, error)
@@ -25,8 +26,12 @@ type GetAdByIdCmd func(ctx context.Context, id domain.AdID) (*domain.Ad, error)
 
 func (u UseCase) GetAdById() GetAdByIdCmd {
 	return func(ctx context.Context, id domain.AdID) (*domain.Ad, error) {
-		u.logger.Info().Msgf("Fetching ad by id: %v", id)
-		defer u.logger.Info().Msg("All ads fetched !")
-		return u.DB.ByID(ctx, id)
+		ads, err := u.DB.ByID(ctx, id)
+
+		if err != nil {
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
+		}
+
+		return ads, nil
 	}
 }

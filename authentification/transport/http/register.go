@@ -18,11 +18,11 @@ func RegisterHandler(cmd usecase.RegisterProto) fiber.Handler {
 			return
 		}
 
-		payload, err := cmd(c.Context(), register)
+		err = cmd(c.Context(), register)
 		if err != nil {
 			c.Status(http.StatusNotFound).JSON(err)
 			return
 		}
-		ResponseSuccess(c, http.StatusCreated, payload)
+		ResponseSuccess(c, http.StatusCreated, nil)
 	}
 }

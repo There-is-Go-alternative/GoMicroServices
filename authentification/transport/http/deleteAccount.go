@@ -18,11 +18,11 @@ func DeleteAccountHandler(cmd usecase.DeleteAccountProto) fiber.Handler {
 			return
 		}
 
-		payload, err := cmd(c.Context(), account)
+		err = cmd(c.Context(), account)
 		if err != nil {
 			c.Status(http.StatusNotFound).JSON(err)
 			return
 		}
-		ResponseSuccess(c, http.StatusCreated, payload)
+		ResponseSuccess(c, http.StatusCreated, nil)
 	}
 }

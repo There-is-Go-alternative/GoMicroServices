@@ -59,7 +59,7 @@ func (a AuthHTTP) Authorize(token string) (domain.AccountID, error) {
 func (a *AuthHTTP) Register(email, password string) error {
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(&credentialsPayload{Email: email, Password: password}); err != nil {
-		return err
+		return fmt.Errorf("AuthHTTP: %v", err)
 	}
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/register", a.url), payloadBuf)
 	if err != nil {

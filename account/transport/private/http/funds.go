@@ -6,7 +6,6 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 type FundsHTTP struct {
@@ -17,13 +16,6 @@ type FundsHTTP struct {
 
 func NewFundsHTTP(url, apiKey string) *FundsHTTP {
 	return &FundsHTTP{client: http.DefaultClient, url: url, apiKey: apiKey}
-}
-
-type funds struct {
-	ID          string    `json:"id"`
-	UserId      string    `json:"user_id"`
-	Balance     float64   `json:"balance"`
-	LastUpdated time.Time `json:"last_updated"`
 }
 
 func (a FundsHTTP) Create(ID domain.AccountID) error {
@@ -43,14 +35,14 @@ func (a FundsHTTP) Create(ID domain.AccountID) error {
 	return nil
 }
 
-func (a FundsHTTP) Get(ID domain.AccountID) (*float64, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/%v", a.url, ID.String()), nil)
+func (a FundsHTTP) GetByID(ID domain.AccountID) (*float64, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/user/%v", a.url, ID.String()), nil)
 	if err != nil {
 		return nil, nil
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", a.apiKey))
 
-	rep := funds{}
+	rep := domain.Balance{}
 	resp, err := a.Do(req, &rep)
 	if err != nil {
 		return nil, err
@@ -59,6 +51,28 @@ func (a FundsHTTP) Get(ID domain.AccountID) (*float64, error) {
 		return nil, fmt.Errorf("funds Get: Status differs from expected: %v", http.StatusOK)
 	}
 	return &rep.Balance, nil
+}
+
+func (a FundsHTTP) GetAll() (map[domain.AccountID]*domain.Balance, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/%v", a.url), nil)
+	if err != nil {
+		return nil, nil
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", a.apiKey))
+
+	var rep []*domain.Balance
+	resp, err := a.Do(req, &rep)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("funds Get: Status differs from expected: %v", http.StatusOK)
+	}
+	m := make(map[domain.AccountID]*domain.Balance)
+	for _, b := range rep {
+		m[domain.AccountID(b.UserId)] = b
+	}
+	return m, nil
 }
 
 func (a FundsHTTP) Delete(ID domain.AccountID) error {

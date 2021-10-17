@@ -17,7 +17,21 @@ func (u UseCase) GetAllAccounts() GetAllAccountsCmd {
 	return func(ctx context.Context) ([]*domain.Account, error) {
 		u.logger.Info("Fetching all accounts ...")
 		defer u.logger.Info("All accounts fetched !")
-		return u.DB.All(ctx)
+		accounts, err := u.DB.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		balances, err := u.BalanceService.GetAll()
+		if err != nil {
+			return nil, fmt.Errorf("error when calling balance service: %v", err)
+		}
+		for _, account := range accounts {
+			b, ok := balances[account.ID]
+			if ok {
+				account.Balance = b.Balance
+			}
+		}
+		return accounts, nil
 	}
 }
 
@@ -36,8 +50,17 @@ func (u UseCase) GetAccountByID() GetAccountByIDCmd {
 	return func(ctx context.Context, id domain.AccountID) (*domain.Account, error) {
 		// TODO: Add auth service check here
 		u.logger.Infof("Fetching account by id: %v", id)
-		defer u.logger.Info("All accounts fetched !")
-		return u.DB.ByID(ctx, id)
+		defer u.logger.Infof("account %v fetched !", id)
+		account, err := u.DB.ByID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		balance, err := u.BalanceService.GetByID(account.ID)
+		if err != nil {
+			return nil, err
+		}
+		account.Balance = *balance
+		return account, nil
 	}
 }
 

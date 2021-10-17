@@ -50,7 +50,7 @@ type Account struct {
 	Lastname  string    `json:"lastname"`
 	Admin     bool      `json:"admin,omitempty"`
 	Address   Address   `json:"address,omitempty"`
-	Balance   int       `json:"balance,omitempty"`
+	Balance   float64   `json:"balance,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -112,4 +112,9 @@ func (a Address) Validate() error {
 		return nil
 	}
 	return errors.New("address not good formed")
+}
+
+type Balance struct {
+	UserId  string  `json:"user_id"`
+	Balance float64 `json:"balance"`
 }

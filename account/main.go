@@ -71,7 +71,7 @@ func main() {
 
 	// Initialising Balance Service connector
 	setupContext.Info("Setting up Balance service ...")
-	balanceService := privateHTTP.NewAuthHTTP(conf.AuthURL, conf.APIKey)
+	balanceService := privateHTTP.NewFundsHTTP(conf.BalanceURL, conf.APIKey)
 
 	// Initialising Account UseCase
 	setupContext.Info("Setting up Account UseCase ...")

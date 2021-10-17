@@ -26,7 +26,9 @@ type AuthService interface {
 }
 
 type BalanceService interface {
-	Authorize(token string) (domain.AccountID, error)
+	Create(ID domain.AccountID) error
+	GetByID(ID domain.AccountID) (*float64, error)
+	GetAll() (map[domain.AccountID]*domain.Balance, error)
 }
 
 // UseCase handle the business logic

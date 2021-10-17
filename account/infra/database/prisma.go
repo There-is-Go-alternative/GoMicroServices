@@ -47,7 +47,6 @@ func prismaAccountToDomain(pa *prismaDB.AccountModel) *domain.Account {
 		Lastname:  pa.Lastname,
 		Admin:     isAdmin(),
 		Address:   getAddress(),
-		Balance:   pa.Balance,
 		CreatedAt: pa.CreatedAt,
 		UpdatedAt: pa.UpdatedAt,
 	}
@@ -59,7 +58,6 @@ func (p DB) Create(ctx context.Context, account *domain.Account) (*domain.Accoun
 		prismaDB.Account.Email.Set(account.Email),
 		prismaDB.Account.Firstname.Set(account.Firstname),
 		prismaDB.Account.Lastname.Set(account.Lastname),
-		prismaDB.Account.Balance.Set(account.Balance),
 		// TODO:
 		//db.Account.Address.Link(),
 	).Exec(ctx)
@@ -121,7 +119,6 @@ func (p DB) Update(ctx context.Context, account *domain.Account) (*domain.Accoun
 		prismaDB.Account.Email.Set(account.Email),
 		prismaDB.Account.Firstname.Set(account.Firstname),
 		prismaDB.Account.Lastname.Set(account.Lastname),
-		prismaDB.Account.Balance.Set(account.Balance),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err

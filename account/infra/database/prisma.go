@@ -119,10 +119,6 @@ func (p DB) Update(ctx context.Context, account *domain.Account) (*domain.Accoun
 		prismaDB.Account.Email.Set(account.Email),
 		prismaDB.Account.Firstname.Set(account.Firstname),
 		prismaDB.Account.Lastname.Set(account.Lastname),
-<<<<<<< HEAD
-=======
-		prismaDB.Account.Balance.Set(account.Balance),
->>>>>>> e6139e8 (add(account): Adding login and register management and cleaning errors.)
 	).Exec(ctx)
 	if err != nil {
 		return nil, err

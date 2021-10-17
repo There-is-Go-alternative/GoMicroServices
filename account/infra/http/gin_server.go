@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	transportPublicHTTP "github.com/There-is-Go-alternative/GoMicroServices/account/transport/public/http"
+	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ type Server struct {
 	logger *logrus.Entry
 }
 
-func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config, logger *logrus.Logger) *Server {
+func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config, authService usecase.AuthService, logger *logrus.Logger) *Server {
 	gin.DefaultWriter = logger.Writer()
 	router := gin.Default()
 
@@ -32,7 +33,7 @@ func NewHttpServer(uc transportPublicHTTP.AccountUseCase, conf *config.Config, l
 	//	MaxAge:           12 * time.Hour,
 	//}))
 
-	transportPublicHTTP.ApplyAccountRoutes(router, uc, conf)
+	transportPublicHTTP.ApplyAccountRoutes(router, uc, conf, authService)
 
 	// Grouping Account routes with url specified in config (I.E: 'account')
 	return &Server{

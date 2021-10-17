@@ -47,28 +47,24 @@ func prismaAccountToDomain(pa *prismaDB.AccountModel) *domain.Account {
 		Lastname:  pa.Lastname,
 		Admin:     isAdmin(),
 		Address:   getAddress(),
-		Balance:   pa.Balance,
 		CreatedAt: pa.CreatedAt,
 		UpdatedAt: pa.UpdatedAt,
 	}
 }
 
-func (p DB) Create(ctx context.Context, accounts ...*domain.Account) error {
-	var errs []error
-	for _, a := range accounts {
-		if _, err := p.Client.Account.CreateOne(
-			prismaDB.Account.ID.Set(a.ID.String()),
-			prismaDB.Account.Email.Set(a.Email),
-			prismaDB.Account.Firstname.Set(a.Firstname),
-			prismaDB.Account.Lastname.Set(a.Lastname),
-			prismaDB.Account.Balance.Set(a.Balance),
-			// TODO:
-			//db.Account.Address.Link(),
-		).Exec(ctx); err != nil {
-			errs = append(errs, err)
-		}
+func (p DB) Create(ctx context.Context, account *domain.Account) (*domain.Account, error) {
+	acc, err := p.Client.Account.CreateOne(
+		prismaDB.Account.ID.Set(account.ID.String()),
+		prismaDB.Account.Email.Set(account.Email),
+		prismaDB.Account.Firstname.Set(account.Firstname),
+		prismaDB.Account.Lastname.Set(account.Lastname),
+		// TODO:
+		//db.Account.Address.Link(),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
 	}
-	return xerrors.Concat(errs...)
+	return prismaAccountToDomain(acc), nil
 }
 
 func (p DB) ByID(ctx context.Context, ID domain.AccountID) (*domain.Account, error) {
@@ -116,24 +112,18 @@ func (p DB) ByFullname(ctx context.Context, firstname, lastname string) ([]*doma
 }
 
 // Update a list of domain.Account to the MemMapStorage
-func (p DB) Update(ctx context.Context, accounts ...*domain.Account) error {
-	// TODO:
-	return nil
-	//var errs []error
-	//for _, a := range accounts {
-	//	updated, err := p.Client.Account.FindUnique(
-	//		db.Account.ID.Equals(a.ID.String()),
-	//	).Update(
-	//
-	//		Comment.Post.Link(
-	//			Post.ID.Equals(postID),
-	//		),
-	//	).Exec(ctx)
-	//	if err != nil {
-	//		errs = append(errs, err)
-	//	}
-	//}
-	//return p.Save(accounts...)
+func (p DB) Update(ctx context.Context, account *domain.Account) (*domain.Account, error) {
+	updated, err := p.Client.Account.FindUnique(
+		prismaDB.Account.ID.Equals(account.ID.String()),
+	).Update(
+		prismaDB.Account.Email.Set(account.Email),
+		prismaDB.Account.Firstname.Set(account.Firstname),
+		prismaDB.Account.Lastname.Set(account.Lastname),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return prismaAccountToDomain(updated), err
 }
 
 // All return all domain.Account.
@@ -142,13 +132,10 @@ func (p *DB) All(ctx context.Context) ([]*domain.Account, error) {
 }
 
 // Remove a domain.Account from the MemMapStorage
-func (p *DB) Remove(ctx context.Context, accounts ...*domain.Account) error {
-	var errs []error
-	for _, a := range accounts {
-		_, err := p.Client.Account.FindUnique(prismaDB.Account.ID.Equals(a.ID.String())).Delete().Exec(ctx)
-		if err != nil {
-			errs = append(errs, err)
-		}
+func (p *DB) Remove(ctx context.Context, id domain.AccountID) (*domain.Account, error) {
+	acc, err := p.Client.Account.FindUnique(prismaDB.Account.ID.Equals(id.String())).Delete().Exec(ctx)
+	if err != nil {
+		return nil, err
 	}
-	return xerrors.Concat(errs...)
+	return prismaAccountToDomain(acc), nil
 }

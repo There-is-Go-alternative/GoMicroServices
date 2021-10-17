@@ -71,7 +71,7 @@ func main() {
 
 	// Initialising Balance Service connector
 	setupContext.Info("Setting up Balance service ...")
-	balanceService := privateHTTP.NewAuthHTTP(conf.AuthURL, conf.APIKey)
+	balanceService := privateHTTP.NewFundsHTTP(conf.BalanceURL, conf.APIKey)
 
 	// Initialising Account UseCase
 	setupContext.Info("Setting up Account UseCase ...")
@@ -79,7 +79,7 @@ func main() {
 
 	// Initialising Gin Server
 	setupContext.Info("Setting up Account Http handler ...")
-	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf, logger)
+	ginServer := infraHTTP.NewHttpServer(accountUseCase, conf, authService, logger)
 
 	// Setup blocking service that must be run in parallel inside a go routine
 	//  I.E: Http server, kafka consumer, ...

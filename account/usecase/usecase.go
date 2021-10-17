@@ -8,23 +8,27 @@ import (
 
 // Database is an interface that represent all possible actions that can be performed on a domain.Account DB.
 type Database interface {
-	Create(ctx context.Context, accounts ...*domain.Account) error
-	Update(ctx context.Context, accounts ...*domain.Account) error
+	Create(ctx context.Context, account *domain.Account) (*domain.Account, error)
+	Update(ctx context.Context, account *domain.Account) (*domain.Account, error)
 	All(ctx context.Context) ([]*domain.Account, error)
 	ByID(ctx context.Context, id domain.AccountID) (*domain.Account, error)
 	ByEmail(ctx context.Context, email string) ([]*domain.Account, error)
 	ByFirstname(ctx context.Context, firstname string) ([]*domain.Account, error)
 	ByLastname(ctx context.Context, lastname string) ([]*domain.Account, error)
 	ByFullname(ctx context.Context, firstname, lastname string) ([]*domain.Account, error)
-	Remove(ctx context.Context, accounts ...*domain.Account) error
+	Remove(ctx context.Context, id domain.AccountID) (*domain.Account, error)
 }
 
 type AuthService interface {
 	Authorize(token string) (domain.AccountID, error)
+	Register(email, password string) error
+	Unregister(email string) error
 }
 
 type BalanceService interface {
-	Authorize(token string) (domain.AccountID, error)
+	Create(ID domain.AccountID) error
+	GetByID(ID domain.AccountID) (*float64, error)
+	GetAll() (map[domain.AccountID]*domain.Balance, error)
 }
 
 // UseCase handle the business logic

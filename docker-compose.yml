@@ -30,7 +30,7 @@ services:
       context: account
       dockerfile: build/Dockerfile
       target: builder
-    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma --skip-generate"
+    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma --skip-generate --accept-data-loss"
     depends_on:
       - postgres_db
     environment:
@@ -45,22 +45,15 @@ services:
     depends_on:
       - postgres_db
       - account_prisma_migration
-
     # Build Default Dockerfile in "account" directory.
     build:
       context: account
       dockerfile: build/Dockerfile
       target: runner
-    # using env file as configuration for non-critical variables
-#    env_file:
-#      - account/.env
     volumes:
-#      # Keeping Logs for Debug/Monitoring purposes.
-#      - ./logs:/logs
       # Caching go modules for faster builds.
       - account_go-modules:/go
     restart: always
-#    command: "wait-for-it.sh 'postgres_db:5432' && ./account"
 
     environment:
 #      # Port on which backend is running
@@ -70,11 +63,9 @@ services:
       CONF_PATH: "${ACCOUNT_CONF_PATH}"
       LOG_FORMATTER: "${ACCOUNT_LOG_FORMATTER}"
       BIN_ARGS: "${ACCOUNT_LOG_FORMATTER}"
-      # Directory to puts logs in.
-      LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
       AUTH_URL: "auth:7003"
-      BALANCE_URL: "balance:7004"
+      BALANCE_URL: "funds:7575/api/v1"
 
     # Port
     ports:
@@ -83,6 +74,7 @@ services:
     networks:
       - auth
       - account
+      - funds
       - postgres_db
 
   ads:
@@ -119,7 +111,7 @@ services:
       context: funds
       dockerfile: build/Dockerfile
       target: builder
-    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma --skip-generate"
+    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma --skip-generate --accept-data-loss"
     depends_on:
       - postgres_db
     environment:
@@ -144,7 +136,7 @@ services:
       AUTHORIZED_KEYS: "${API_KEY}"
       CONF_PATH: "${FUNDS_CONF_PATH}"
     ports:
-      - "7502:7502"
+      - "7575:7575"
     networks:
       - account
       - funds
@@ -183,19 +175,15 @@ services:
     restart: always
     environment:
       MONGO_DB: "${AUTH_MONGO_DB}"
-      USER: "${AUTH_USER}"
-      PASSWORD: "${AUTH_PASSWORD}"
       MONGO_COLLECTION: "${AUTH_MONGO_COLLECTION}"
       PORT: "${AUTH_PORT}"
       MONGO_URI: "${AUTH_MONGO_URI}"
     expose:
-      - ${AUTH_PORT}
+      - "7503"
     ports:
-      - "${AUTH_PORT}:${AUTH_PORT}"
+      - "7503:7503"
     networks:
       - auth
-      - ads
-      - account
 
 
 networks:

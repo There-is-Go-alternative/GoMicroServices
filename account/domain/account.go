@@ -2,7 +2,6 @@ package domain
 
 import (
 	"fmt"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"net/mail"
@@ -51,7 +50,7 @@ type Account struct {
 	Lastname  string    `json:"lastname"`
 	Admin     bool      `json:"admin,omitempty"`
 	Address   Address   `json:"address,omitempty"`
-	Balance   int       `json:"balance,omitempty"`
+	Balance   float64   `json:"balance,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -59,16 +58,15 @@ type Account struct {
 // Validate check presence of minimal data required for an Account.
 func (a Account) Validate() error {
 	var err error
-	var errs []error
 
 	if err = a.ID.Validate(); err != nil {
-		errs = append(errs, err)
+		return err
 	}
 	if err = validateEmail(a.Email); err != nil {
-		errs = append(errs, err)
+		return err
 	}
 
-	return xerrors.Concat(errs...)
+	return nil
 }
 
 func (a Account) String() string {
@@ -114,4 +112,9 @@ func (a Address) Validate() error {
 		return nil
 	}
 	return errors.New("address not good formed")
+}
+
+type Balance struct {
+	UserId  string  `json:"user_id"`
+	Balance float64 `json:"balance"`
 }

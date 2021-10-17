@@ -92,8 +92,6 @@ services:
       context: ads
       dockerfile: build/Dockerfile
       target: runner
-    env_file:
-      - ads/.env
     volumes:
       - ads_go-modules:/go
     restart: always

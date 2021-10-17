@@ -26,18 +26,18 @@ type useCase interface {
 	GetAllAds() usecase.GetAllAdsCmd
 	DeleteAd() usecase.DeleteAdCmd
 	SearchAd() usecase.SearchAdCmd
+	BuyAd() usecase.BuyAdCmd
 }
 
 // TODO: change database by future Database interface
 func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
-
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
 		AllowCredentials: false,
-		AllowAllOrigins:  true,
-		AllowWildcard:    true,
+		AllowAllOrigins: true,
+		AllowWildcard: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
@@ -55,6 +55,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		ad.DELETE("/:id", adHandler.DeleteAdHandler(uc.DeleteAd()))
 		ad.PATCH("/:id", adHandler.UpdateAdHandler(uc.UpdateAd()))
 		ad.GET("/search/", adHandler.SearchAdHandler(uc.SearchAd()))
+		ad.GET("/buy/:id", adHandler.BuyAdHandler(uc.BuyAd()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

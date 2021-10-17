@@ -41,7 +41,12 @@ type ErrorWithCode struct {
 
 // Error implement error interface
 func (e ErrorWithCode) Error() string {
-	return fmt.Sprintf("[%d]: %v", e.Code, e.Err)
+	return fmt.Sprintf("%v", e.Err)
+}
+
+// Error implement error interface
+func (e ErrorWithCode) GetCode() string {
+	return fmt.Sprintf("%d", e.Code)
 }
 
 // Is implement Go 1.13 new error interface

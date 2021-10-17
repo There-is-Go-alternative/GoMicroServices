@@ -68,11 +68,20 @@ func (db *MongoDB) FindByID(ctx context.Context, id string) (domain.Auth, error)
 	return auth, nil
 }
 
-func (db *MongoDB) Save(ctx context.Context, user domain.Auth) (*mongo.InsertOneResult, error) {
-	register, err := db.collection.InsertOne(context.Background(), user)
+func (db *MongoDB) Save(ctx context.Context, user domain.Auth) error {
+	_, err := db.collection.InsertOne(context.Background(), user)
 
 	if err != nil {
-		return nil, fmt.Errorf("Can not save fields")
+		return fmt.Errorf("Can not save fields")
 	}
-	return register, nil
+	return nil
+}
+
+func (db *MongoDB) Delete(ctx context.Context, id string) error {
+	_, err := db.collection.DeleteOne(ctx, bson.M{"id": id})
+
+	if err != nil {
+		return fmt.Errorf("Can not save fields")
+	}
+	return nil
 }

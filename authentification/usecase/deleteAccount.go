@@ -6,12 +6,12 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
 )
 
-type RegisterProto func(ctx context.Context, input domain.Auth) (string, error)
+type DeleteAccountProto func(ctx context.Context, input domain.Auth) (string, error)
 
-func (u UseCase) Register() RegisterProto {
+func (u UseCase) DeleteAccount() DeleteAccountProto {
 	return func(ctx context.Context, input domain.Auth) (string, error) {
 
-		err := u.DB.Save(ctx, input)
+		err := u.DB.Delete(ctx, input.ID)
 		if err != nil {
 			return "", err
 		}

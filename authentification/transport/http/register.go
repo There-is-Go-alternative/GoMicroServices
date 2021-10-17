@@ -10,7 +10,7 @@ import (
 
 func RegisterHandler(cmd usecase.RegisterProto) fiber.Handler {
 	return func(c *fiber.Ctx) {
-		var register domain.Register
+		var register domain.Auth
 
 		err := c.BodyParser(&register)
 		if err != nil {

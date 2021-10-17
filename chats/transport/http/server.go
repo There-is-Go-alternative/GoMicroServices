@@ -31,15 +31,15 @@ func NewChatsHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("/health", func(c *gin.Context) {
-		c.Status(netHTTP.StatusOK)
-	})
 	chatHandler := NewChatHandler()
 	// Grouping Chat routes with url specified in config (I.E: 'chat')
 	chat := router.Group(fmt.Sprintf("/%s", conf.ChatsEndpoint))
 	{
+		chat.GET("/health", func(c *gin.Context) {
+			c.Status(netHTTP.StatusOK)
+		})
 		chat.POST("/", chatHandler.CreateChatHandler(uc.CreateChat()))
-		chat.GET("/:id", chatHandler.GetChatsByIDHandler(uc.GetChatById()))
+		chat.GET("/:id", chatHandler.GetChatByIDHandler(uc.GetChatById()))
 		chat.GET("/user/:user_id", chatHandler.GetAllChatsOfUserHandler(uc.GetAllChatsOfUser()))
 	}
 	return &Server{
@@ -55,13 +55,13 @@ func NewMessagesHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("/health", func(c *gin.Context) {
-		c.Status(netHTTP.StatusOK)
-	})
 	messageHandler := NewMessageHandler()
 	// Grouping Chat routes with url specified in config (I.E: 'chat')
 	message := router.Group(fmt.Sprintf("/%s", conf.MessagesEndpoint))
 	{
+		message.GET("/health", func(c *gin.Context) {
+			c.Status(netHTTP.StatusOK)
+		})
 		message.POST("/", messageHandler.CreateMessageHandler(uc.CreateMessage()))
 		message.GET("/:id", messageHandler.GetMessagesByChatIDHandler(uc.GetMessagesByChatID()))
 	}

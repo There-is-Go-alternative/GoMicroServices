@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	netHTTP "net/http"
+	"time"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
@@ -25,12 +26,20 @@ type useCase interface {
 	GetAllAds() usecase.GetAllAdsCmd
 	DeleteAd() usecase.DeleteAdCmd
 	SearchAd() usecase.SearchAdCmd
+	BuyAd() usecase.BuyAdCmd
 }
 
 // TODO: change database by future Database interface
 func NewHttpServer(uc useCase, conf *config.Config) *Server {
 	router := gin.Default()
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowCredentials: false,
+		AllowAllOrigins: true,
+		AllowWildcard: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	router.GET("/health", func(c *gin.Context) {
 		c.Status(netHTTP.StatusOK)
@@ -46,6 +55,7 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		ad.DELETE("/:id", adHandler.DeleteAdHandler(uc.DeleteAd()))
 		ad.PATCH("/:id", adHandler.UpdateAdHandler(uc.UpdateAd()))
 		ad.GET("/search/", adHandler.SearchAdHandler(uc.SearchAd()))
+		ad.GET("/buy/:id", adHandler.BuyAdHandler(uc.BuyAd()))
 	}
 	return &Server{
 		Engine: &netHTTP.Server{

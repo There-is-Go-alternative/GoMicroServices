@@ -171,6 +171,7 @@ func (m *Database) Create(ctx context.Context, ads ...*domain.Ad) error {
 			"price": ad.Price,
 			"pictures": ad.Pictures,
 			"owner_user_id": ad.UserId,
+			"state": ad.State,
 		})
 		if err != nil {
 			errs.Add(err)
@@ -221,6 +222,7 @@ func (m *Database) Update(ctx context.Context, ads ...*domain.Ad) error {
 			"price": ad.Price,
 			"pictures": ad.Pictures,
 			"owner_user_id": ad.UserId,
+			"state": ad.State,
 		})
 		if err != nil {
 			errs.Add(err)

@@ -20,7 +20,7 @@ type CreateAdInput struct {
 
 func (u UseCase) CreateAd() CreateAdCmd {
 	return func(ctx context.Context, input CreateAdInput) (*domain.Ad, error) {
-		ad := &domain.Ad{Title: input.Title, Description: input.Description, Price: *input.Price, Pictures: input.Pictures, UserId: input.UserId}
+		ad := &domain.Ad{Title: input.Title, Description: input.Description, Price: *input.Price, Pictures: input.Pictures, UserId: input.UserId, State: "open"}
 		AdID, err := domain.NewAdID()
 		if err != nil {
 			return nil, err

@@ -28,13 +28,13 @@ func (u UseCase) UpdateAccount() UpdateAccountCmd {
 		if err != nil {
 			return nil, err
 		}
-		*a = cmd.Account
-		// TODO: Check Unique fields ??
-
-		// Updating modification timestamp
+		err = mergo.Merge(a, &cmd.Account, mergo.WithOverride)
+		if err != nil {
+			return nil, xerrors.ErrorWithCode{Code: xerrors.InternalError, Err: err}
+		}
 		a.UpdatedAt = time.Now()
-
-		if err = u.DB.Update(ctx, a); err != nil {
+		a, err = u.DB.Update(ctx, a)
+		if err != nil {
 			return nil, err
 		}
 		return a, nil
@@ -69,7 +69,7 @@ func (u UseCase) PatchAccount() PatchAccountCmd {
 		a.UpdatedAt = time.Now()
 
 		// Updating account in DB
-		if err = u.DB.Update(ctx, a); err != nil {
+		if a, err = u.DB.Update(ctx, a); err != nil {
 			return nil, err
 		}
 		return a, nil

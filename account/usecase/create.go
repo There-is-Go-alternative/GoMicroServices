@@ -16,6 +16,7 @@ type CreateAccountCmd func(ctx context.Context, input CreateAccountInput) (*doma
 // CreateAccountInput is used by UseCase.CreateAccount for the creation of an account.
 type CreateAccountInput struct {
 	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 }
@@ -45,9 +46,15 @@ func (u UseCase) CreateAccount() CreateAccountCmd {
 
 		// Adding createdAt timestamp
 		account.CreatedAt = time.Now()
+		if err = u.AuthService.Register(input.Email, input.Password); err != nil {
+			return nil, err
+		}
 
 		// Creating account
-		err = u.DB.Create(ctx, account)
-		return account, err
+		account, err = u.DB.Create(ctx, account)
+		if err != nil {
+			return nil, err
+		}
+		return account, nil
 	}
 }

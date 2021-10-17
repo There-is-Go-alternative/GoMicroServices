@@ -2,7 +2,6 @@ package domain
 
 import (
 	"fmt"
-	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/xerrors"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"net/mail"
@@ -59,16 +58,15 @@ type Account struct {
 // Validate check presence of minimal data required for an Account.
 func (a Account) Validate() error {
 	var err error
-	var errs []error
 
 	if err = a.ID.Validate(); err != nil {
-		errs = append(errs, err)
+		return err
 	}
 	if err = validateEmail(a.Email); err != nil {
-		errs = append(errs, err)
+		return err
 	}
 
-	return xerrors.Concat(errs...)
+	return nil
 }
 
 func (a Account) String() string {

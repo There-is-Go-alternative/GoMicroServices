@@ -30,9 +30,7 @@ type MemMapStorage struct {
 	closing chan chan struct{}
 
 	// logger is the service that manage Infos and Warning trace.
-	// TODO: Change logger
 	logger zerolog.Logger
-	//logger *logrus.Logger
 }
 
 // NewAccountMemMapStorage return a MemMapStorage pointer initialised.
@@ -67,35 +65,27 @@ func (m *MemMapStorage) Run(ctx context.Context) error {
 
 // Save add list of domain.Account to the MemMapStorage, erasing existing accounts if any
 // Use lambda to access the map of domain.Account
-func (m *MemMapStorage) Save(accounts ...*domain.Account) error {
-	if len(accounts) == 0 {
-		return nil
-	}
-
-	var errs []error
+func (m *MemMapStorage) Save(account *domain.Account) error {
 	m.Rcv <- func() error {
-		for _, a := range accounts {
-			if err := a.Validate(); err != nil {
-				m.logger.WithLevel(zerolog.DebugLevel).Err(err).Msgf("could not add account: %v", a)
-				errs = append(errs, err)
-				continue
-			}
-			m.storage[a.ID.String()] = *a
-			m.logger.Info().Interface("account", a).Msgf("Adding Account: %v", a.Email)
+		if err := account.Validate(); err != nil {
+			m.logger.WithLevel(zerolog.DebugLevel).Err(err).Msgf("could not add account: %v", account)
+			return err
 		}
-		return xerrors.Concat(errs...)
+		m.storage[account.ID.String()] = *account
+		m.logger.Info().Interface("account", account).Msgf("Adding Account: %v", account.Email)
+		return nil
 	}
 	return <-m.Err
 }
 
 // Create add list of domain.Account to the MemMapStorage
-func (m *MemMapStorage) Create(_ context.Context, accounts ...*domain.Account) error {
-	return m.Save(accounts...)
+func (m *MemMapStorage) Create(_ context.Context, account *domain.Account) error {
+	return m.Save(account)
 }
 
 // Update a list of domain.Account to the MemMapStorage
-func (m *MemMapStorage) Update(_ context.Context, accounts ...*domain.Account) error {
-	return m.Save(accounts...)
+func (m *MemMapStorage) Update(_ context.Context, account *domain.Account) error {
+	return m.Save(account)
 }
 
 // ByID Retrieve the info that match "id" in map of domain.Account.
@@ -189,16 +179,10 @@ func (m *MemMapStorage) All(_ context.Context) ([]*domain.Account, error) {
 
 // Remove a domain.Account from the MemMapStorage
 // Use lambda to access the map of domain.Account
-func (m *MemMapStorage) Remove(_ context.Context, accounts ...*domain.Account) error {
-	if len(accounts) <= 0 {
-		return nil
-	}
-
+func (m *MemMapStorage) Remove(_ context.Context, account *domain.Account) error {
 	// Send lambda to remove commonNetwork.Client from ClientMemMapStorage
 	m.Rcv <- func() error {
-		for _, a := range accounts {
-			delete(m.storage, a.ID.String())
-		}
+		delete(m.storage, account.ID.String())
 		return nil
 	}
 	return <-m.Err

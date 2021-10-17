@@ -16,8 +16,13 @@ type DeleteAccountInput struct {
 // DeleteAccount is the UseCase handler that delete a domain.Account.
 func (u UseCase) DeleteAccount() DeleteAccountCmd {
 	return func(ctx context.Context, input DeleteAccountInput) (*domain.Account, error) {
-		account := domain.Account{ID: input.ID}
-		err := u.DB.Remove(ctx, &account)
-		return &account, err
+		acc, err := u.DB.Remove(ctx, input.ID)
+		if err != nil {
+			return nil, err
+		}
+		if err = u.AuthService.Unregister(acc.Email); err != nil {
+			return nil, err
+		}
+		return acc, err
 	}
 }

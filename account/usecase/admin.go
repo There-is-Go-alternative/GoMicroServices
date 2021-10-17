@@ -21,6 +21,6 @@ func (u UseCase) IsAdmin() IsAdminCmd {
 		if err != nil {
 			return false, err
 		}
-		return acc.Admin, err
+		return acc.IsAdmin(), err
 	}
 }

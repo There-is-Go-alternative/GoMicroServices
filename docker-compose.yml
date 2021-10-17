@@ -12,7 +12,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-      POSTGRES_MULTIPLE_DATABASES: account,funds
+      POSTGRES_MULTIPLE_DATABASES: account,funds,transactions
     volumes:
       - ./pg_init_scripts:/docker-entrypoint-initdb.d
     healthcheck:
@@ -94,6 +94,50 @@ services:
     networks:
       - ads
       - account
+
+  transactions_prisma_migration:
+    image: docker.io/damienbernard42/gomicroservices_transactions_prisma_migrations
+    build:
+      context: transactions
+      dockerfile: build/Dockerfile
+      target: builder
+    command: "go run github.com/prisma/prisma-client-go db push --schema infra/database/schema.prisma --skip-generate"
+    depends_on:
+      - postgres_db
+    environment:
+      DATABASE_URL: "${TRANSACTIONS_POSTGRES_URL}"
+    networks:
+      - postgres_db
+
+  transactions:
+    image: docker.io/damienbernard42/gomicroservices_transactions
+    container_name: transactions_service
+    build:
+      context: transactions
+      dockerfile: build/Dockerfile
+      target: runner
+    env_file:
+      - transactions/.env
+    volumes:
+      - transactions_go-modules:/go
+    restart: always
+    environment:
+      HTTP_PORT: 7505
+      API_KEY: ${API_KEY}
+      ACCOUNT_URL: "http://account:7500/"
+      ADS_URL: "http://ads:7501/"
+      FUNDS_URL: "http://funds:7502/"
+      CONF_PATH: "config.json"
+    ports:
+      - "7505:7505"
+    networks:
+      - ads
+      - account
+      - funds
+      - transactions
+    depends_on:
+      - postgres_db
+      - transactions_prisma_migration
 
   swagger-ads:
     container_name: swagger_ui_ads
@@ -197,6 +241,8 @@ networks:
     driver: bridge
   funds:
     driver: bridge
+  transactions:
+    driver: bridge
   chats:
     driver: bridge
 
@@ -206,3 +252,4 @@ volumes:
   funds_go-modules: {}
   chats_go-modules: {}
   authentification_go-modules: {}
+  transactions_go-modules: {}

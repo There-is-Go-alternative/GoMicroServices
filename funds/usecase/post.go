@@ -7,11 +7,11 @@ import (
 )
 
 type IncreaseDecreaseInput struct {
-	By int `json:"by" binding:"required"`
+	By float64 `json:"by" binding:"required"`
 }
 
 type SetInput struct {
-	NewBalance int `json:"new_balance" binding:"required"`
+	NewBalance float64 `json:"new_balance" binding:"required"`
 }
 
 type IncreaseByUserCmd func(ctx context.Context, id string, input IncreaseDecreaseInput) error

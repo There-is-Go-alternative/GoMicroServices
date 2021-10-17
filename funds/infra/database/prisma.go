@@ -61,7 +61,7 @@ func (p PrismaDB) ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, 
 	}, nil
 }
 
-func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance int) error {
+func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.ID.Equals(id.String()),
 	).Update(
@@ -72,7 +72,7 @@ func (p PrismaDB) Update(ctx context.Context, id *domain.FundsID, new_balance in
 	return err
 }
 
-func (p PrismaDB) UpdateByUser(ctx context.Context, id string, new_balance int) error {
+func (p PrismaDB) UpdateByUser(ctx context.Context, id string, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.UserID.Equals(id),
 	).Update(
@@ -83,7 +83,7 @@ func (p PrismaDB) UpdateByUser(ctx context.Context, id string, new_balance int) 
 	return err
 }
 
-func (p PrismaDB) IncreaseByUser(ctx context.Context, id string, new_balance int) error {
+func (p PrismaDB) IncreaseByUser(ctx context.Context, id string, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.UserID.Equals(id),
 	).Update(
@@ -94,7 +94,7 @@ func (p PrismaDB) IncreaseByUser(ctx context.Context, id string, new_balance int
 	return err
 }
 
-func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance int) error {
+func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.ID.Equals(id.String()),
 	).Update(
@@ -105,7 +105,7 @@ func (p PrismaDB) Increase(ctx context.Context, id *domain.FundsID, new_balance 
 	return err
 }
 
-func (p PrismaDB) DecreaseByUser(ctx context.Context, id string, new_balance int) error {
+func (p PrismaDB) DecreaseByUser(ctx context.Context, id string, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.UserID.Equals(id),
 	).Update(
@@ -116,7 +116,7 @@ func (p PrismaDB) DecreaseByUser(ctx context.Context, id string, new_balance int
 	return err
 }
 
-func (p PrismaDB) Decrease(ctx context.Context, id *domain.FundsID, new_balance int) error {
+func (p PrismaDB) Decrease(ctx context.Context, id *domain.FundsID, new_balance float64) error {
 	_, err := p.Client.Funds.FindUnique(
 		db.Funds.ID.Equals(id.String()),
 	).Update(

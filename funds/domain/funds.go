@@ -33,7 +33,7 @@ func (id FundsID) String() string {
 type Funds struct {
 	ID          FundsID   `json:"id"`
 	UserId      string    `json:"user_id"`
-	Balance     int       `json:"balance"`
+	Balance     float64   `json:"balance"`
 	LastUpdated time.Time `json:"last_updated"`
 }
 

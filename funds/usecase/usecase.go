@@ -11,12 +11,12 @@ import (
 type Database interface {
 	ByUserId(ctx context.Context, id string) (*domain.Funds, error)
 	ById(ctx context.Context, id *domain.FundsID) (*domain.Funds, error)
-	Update(ctx context.Context, id *domain.FundsID, new_balance int) error
-	UpdateByUser(ctx context.Context, id string, new_balance int) error
-	Increase(ctx context.Context, id *domain.FundsID, by int) error
-	IncreaseByUser(ctx context.Context, id string, by int) error
-	Decrease(ctx context.Context, id *domain.FundsID, by int) error
-	DecreaseByUser(ctx context.Context, id string, by int) error
+	Update(ctx context.Context, id *domain.FundsID, new_balance float64) error
+	UpdateByUser(ctx context.Context, id string, new_balance float64) error
+	Increase(ctx context.Context, id *domain.FundsID, by float64) error
+	IncreaseByUser(ctx context.Context, id string, by float64) error
+	Decrease(ctx context.Context, id *domain.FundsID, by float64) error
+	DecreaseByUser(ctx context.Context, id string, by float64) error
 	Create(ctx context.Context, f domain.Funds) error
 	DeleteByUserId(ctx context.Context, id string) error
 	DeleteById(ctx context.Context, id *domain.FundsID) error

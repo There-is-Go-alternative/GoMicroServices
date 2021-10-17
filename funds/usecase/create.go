@@ -11,8 +11,8 @@ import (
 type CreateFundsCmd func(ctx context.Context, input CreateFundsInput) (*domain.Funds, error)
 
 type CreateFundsInput struct {
-	UserId  string `json:"user_id" binding:"required"`
-	Balance int    `json:"initial_balance"`
+	UserId  string  `json:"user_id" binding:"required"`
+	Balance float64 `json:"initial_balance"`
 }
 
 func (u UseCase) Create() CreateFundsCmd {

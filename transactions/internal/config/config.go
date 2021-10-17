@@ -11,7 +11,7 @@ import (
 const (
 	HTTPPortEnvVar   = "HTTP_PORT"
 	APIKeyEnvVar     = "API_KEY"
-	AccountURLEnvVar = "ACCOUNT_URL"
+	AccountURLEnvVar = "AUTH_URL"
 	AdsURLEnvVar     = "ADS_URL"
 	FundsURLEnvVar   = "FUNDS_URL"
 )

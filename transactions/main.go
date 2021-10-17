@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	if *confPath == "" {
-		log.Fatal("Config path is empty")
+		log.Debug("Config path is empty")
 	}
 
 	logger := log.New()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	netHTTP "net/http"
+	"time"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
@@ -35,8 +36,8 @@ func NewHttpServer(uc useCase, conf *config.Config) *Server {
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
 		AllowCredentials: false,
-		AllowAllOrigins: true,
-		AllowWildcard: true,
+		AllowAllOrigins:  true,
+		AllowWildcard:    true,
 		MaxAge:           12 * time.Hour,
 	}))
 

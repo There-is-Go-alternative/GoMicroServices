@@ -65,7 +65,7 @@ services:
       BIN_ARGS: "${ACCOUNT_LOG_FORMATTER}"
       DEBUG_MODE: ${DEBUG_MODE}
       AUTH_URL: "auth:7003"
-      BALANCE_URL: "balance:7004"
+      BALANCE_URL: "balance:7004/api/v1"
 
     # Port
     ports:

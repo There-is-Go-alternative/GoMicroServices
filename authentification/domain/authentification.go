@@ -16,7 +16,7 @@ type conf struct {
 }
 
 var defaultConf = &conf{
-	SecretKey: []byte(os.Getenv("SECRET_KEY")),
+	SecretKey: []byte(os.Getenv("API_KEY")),
 	TokenExp:  time.Now().Add(5 * time.Hour),
 	LoginExp:  100 * time.Second,
 }

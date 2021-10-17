@@ -1,6 +1,6 @@
 #######################################################################################################################
 # Start from golang base image
-FROM golang:1.17 AS builder
+FROM golang:1.17.2-buster AS builder
 
 # Add Image info
 LABEL name='Golang 1.17 (alpine) Image'

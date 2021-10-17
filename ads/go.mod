@@ -16,6 +16,7 @@ require (
 	cloud.google.com/go/storage v1.17.0 // indirect
 	firebase.google.com/go v3.13.0+incompatible // indirect
 	github.com/There-is-Go-alternative/GoMicroServices/account v0.0.0-20211004145423-166650af87b6 // indirect
+	github.com/algolia/algoliasearch-client-go/v3 v3.21.0 // indirect
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -26,6 +27,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

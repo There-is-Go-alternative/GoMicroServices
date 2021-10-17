@@ -65,9 +65,17 @@ func main() {
 		setupContext.Fatal("When initialising Acccount storage: %v", err)
 	}
 
+	// Initialising Auth Service connector
+	setupContext.Info("Setting up Auth service ...")
+	authService := privateHTTP.NewAuthHTTP(conf.AuthURL, conf.APIKey)
+
+	// Initialising Balance Service connector
+	setupContext.Info("Setting up Balance service ...")
+	balanceService := privateHTTP.NewAuthHTTP(conf.AuthURL, conf.APIKey)
+
 	// Initialising Account UseCase
 	setupContext.Info("Setting up Account UseCase ...")
-	accountUseCase := usecase.NewUseCase(&privateHTTP.AuthHTTP{}, accountStorage, logger)
+	accountUseCase := usecase.NewUseCase(authService, balanceService, accountStorage, logger)
 
 	// Initialising Gin Server
 	setupContext.Info("Setting up Account Http handler ...")

@@ -67,3 +67,12 @@ func (db *MongoDB) FindByID(ctx context.Context, id string) (domain.Auth, error)
 	}
 	return auth, nil
 }
+
+func (db *MongoDB) Save(ctx context.Context, user domain.Register) (*mongo.InsertOneResult, error) {
+	register, err := db.collection.InsertOne(context.Background(), user)
+
+	if err != nil {
+		return nil, fmt.Errorf("Can not save fields")
+	}
+	return register, nil
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Database is an interface that represent all possible actions that can be performed on a domain.Account DB.
@@ -13,6 +14,7 @@ import (
 type Database interface {
 	FindByEmail(context.Context, string) (domain.Auth, error)
 	FindByID(context.Context, string) (domain.Auth, error)
+	Save(context.Context, domain.Register) (*mongo.InsertOneResult, error)
 }
 
 type UseCase struct {

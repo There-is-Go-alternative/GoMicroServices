@@ -33,6 +33,11 @@ type Auth struct {
 	Password string `json:"password"`
 }
 
+type Register struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 //id et clé d'encryption
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)

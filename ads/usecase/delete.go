@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 )
 
 type DeleteAdCmd func(ctx context.Context, input DeleteAdInput) (*domain.Ad, error)
@@ -17,9 +18,13 @@ func (u UseCase) DeleteAd() DeleteAdCmd {
 		ad, err := u.DB.ByID(ctx, input.ID)
 
 		if err != nil {
-			return nil, nil
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
 		}
 		err = u.DB.Remove(ctx, ad)
-		return ad, err
+
+		if err != nil {
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
+		}
+		return ad, nil
 	}
 }

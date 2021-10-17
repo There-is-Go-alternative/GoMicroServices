@@ -12,7 +12,6 @@ func (u UseCase) GetAllAds() GetAllAdsCmd {
 	return func(ctx context.Context) ([]*domain.Ad, error) {
 		u.logger.Info().Msg("Fetching all ads ...")
 		defer u.logger.Info().Msg("All ads fetched !")
-		//TODO: In the future, when the Database will be real, find another way to make this code return an empty array
 		all_ads, err := u.DB.All(ctx)
 
 		if all_ads == nil {

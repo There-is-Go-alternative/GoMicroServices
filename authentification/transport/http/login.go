@@ -13,15 +13,15 @@ func LoginHandler(cmd usecase.LoginProto) fiber.Handler {
 
 		err := c.BodyParser(&dto)
 		if err != nil {
-			c.Status(http.StatusBadRequest).JSON(err)
+			ResponseError(c, http.StatusBadRequest, err)
 			return
 		}
 
 		payload, err := cmd(c.Context(), dto)
 		if err != nil {
-			c.Status(http.StatusNotFound).JSON(err)
+			ResponseError(c, http.StatusNotFound, err)
 			return
 		}
-		c.Status(http.StatusCreated).JSON(payload)
+		ResponseSuccess(c, http.StatusCreated, payload)
 	}
 }

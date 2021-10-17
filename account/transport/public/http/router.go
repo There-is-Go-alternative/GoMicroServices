@@ -4,7 +4,6 @@ import (
 	"fmt"
 	netHTTP "net/http"
 
-	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/account/usecase"
 	"github.com/gin-contrib/cors"
@@ -33,21 +32,10 @@ func ApplyAccountRoutes(router *gin.Engine, uc AccountUseCase, conf *config.Conf
 	account := router.Group(fmt.Sprintf("/%s", conf.AccountEndpoint))
 	{
 		account.POST("/", accountHandler.CreateAccountHandler(uc.CreateAccount()))
-		account.GET("/", accountHandler.GetAllAccountsHandler(uc.GetAllAccounts()))
-		account.GET("/:id", accountHandler.GetAccountsByIDHandler(uc.GetAccountByID()))
-		account.PATCH("/:id", accountHandler.PatchAccountHandler(uc.PatchAccount()))
-		account.PUT("/:id", accountHandler.PutAccountHandler(uc.UpdateAccount()))
-		account.DELETE("/:id", accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
-		account.GET("/test", accountHandler.Authorize(), func(c *gin.Context) {
-			uuid, _ := domain.NewAccountID()
-			c.JSON(netHTTP.StatusOK, gin.H{
-				"success": true,
-				"data": domain.Account{
-					ID:        *uuid,
-					Firstname: "COUCOU",
-					Lastname:  "ENTHONNE",
-				},
-			})
-		})
+		account.GET("/", accountHandler.Authorize(), accountHandler.GetAllAccountsHandler(uc.GetAllAccounts()))
+		account.GET("/:id", accountHandler.Authorize(), accountHandler.GetAccountsByIDHandler(uc.GetAccountByID()))
+		account.PATCH("/:id", accountHandler.Authorize(), accountHandler.PatchAccountHandler(uc.PatchAccount()))
+		account.PUT("/:id", accountHandler.Authorize(), accountHandler.PutAccountHandler(uc.UpdateAccount()))
+		account.DELETE("/:id", accountHandler.Authorize(), accountHandler.DeleteAccountHandler(uc.DeleteAccount()))
 	}
 }

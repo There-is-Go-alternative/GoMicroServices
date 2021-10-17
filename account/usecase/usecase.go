@@ -20,19 +20,27 @@ type Database interface {
 }
 
 type AuthService interface {
-	ValidateToken(token string) bool
+	Authorize(token string) (domain.AccountID, error)
+}
+
+type BalanceService interface {
+	Authorize(token string) (domain.AccountID, error)
 }
 
 // UseCase handle the business logic
 type UseCase struct {
-	DB     Database
-	logger *log.Logger
+	AuthService    AuthService
+	BalanceService BalanceService
+	DB             Database
+	logger         *log.Logger
 }
 
 // NewUseCase return an initialized UseCase, using Database
-func NewUseCase(auth AuthService, db Database, logger *log.Logger) *UseCase {
+func NewUseCase(auth AuthService, balance BalanceService, db Database, logger *log.Logger) *UseCase {
 	return &UseCase{
-		DB:     db,
-		logger: logger.WithField("service", "UseCase").Logger,
+		AuthService:    auth,
+		BalanceService: balance,
+		DB:             db,
+		logger:         logger.WithField("service", "UseCase").Logger,
 	}
 }

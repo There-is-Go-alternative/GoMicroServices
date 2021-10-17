@@ -2,40 +2,37 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/imdario/mergo"
 )
 
 type UpdateAdCmd func(ctx context.Context, input UpdateAdInput) (*domain.Ad, error)
 
 type UpdateAdInput struct {
-	ID domain.AdID `json:"id,omitempty"`
-	Title string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Price uint `json:"price,omitempty"`
-	Picture string `json:"picture,omitempty"`
+	domain.Ad
 }
 
 func (u UseCase) UpdateAd() UpdateAdCmd {
 	return func(ctx context.Context, input UpdateAdInput) (*domain.Ad, error) {
-		ad := &domain.Ad{ID: domain.AdID(input.ID), Title: input.Title, Description: input.Description, Price: input.Price, Picture: input.Picture}
+		ad, err := u.DB.ByID(ctx, input.ID)
 
-		if !ad.Validate() {
-			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user ad data: %v", ad),
-			}
+		if err != nil {
+			return nil, err
 		}
 
-		acc, _ := u.DB.ByID(ctx, ad.ID)
-
-		if acc == nil {
-			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("account doesn't exists: %v", ad),
-			}
+		err = mergo.Merge(ad, &input.Ad, mergo.WithOverride)
+		if err != nil {
+			return nil, xerrors.ErrorWithCode{Code: xerrors.CodeInvalidData, Err: err}
 		}
-		err := u.DB.Update(ctx, ad)
+
+		err = u.DB.Update(ctx, ad)
+
+		if err != nil {
+			return nil, xerrors.ErrorWithCode{Code: xerrors.CodeInvalidData, Err: err}
+		}
+
 		return ad, err
 	}
 }

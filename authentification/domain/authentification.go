@@ -2,7 +2,6 @@ package domain
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -17,7 +16,7 @@ type conf struct {
 }
 
 var defaultConf = &conf{
-	SecretKey: []byte(os.Getenv("SECRET_KEY")),
+	SecretKey: []byte(os.Getenv("API_KEY")),
 	TokenExp:  time.Now().Add(5 * time.Hour),
 	LoginExp:  100 * time.Second,
 }
@@ -38,7 +37,7 @@ type Auth struct {
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("Password error: %v", err)
 	}
 
 	return string(bytes), err
@@ -72,10 +71,10 @@ func VerifyToken(tokenStr string) (string, error) {
 		return defaultConf.SecretKey, nil
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Token error: %v", err)
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("Invalid token")
+		return "", fmt.Errorf("Invalid token: %v", err)
 	}
 
 	return claims.UserID, nil

@@ -12,6 +12,7 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/config"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/transport/http"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
+	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,7 +47,7 @@ func main() {
 	log.WithFields(log.Fields{
 		"stage": "setup",
 	}).Info("Setting up Ads Database ...")
-	adsStorage, err := database.NewFirebaseRealTimeDB(ctx, database.DefaultConf)
+	adsStorage, err := database.NewDatabase(ctx, database.DefaultConf)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/transport/api"
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/usecase"
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,32 @@ func ResponseError(c *gin.Context, code int, message interface {}) {
 	c.JSON(code, gin.H {
 		"success": false,
 		"message": message,
+	})
+}
+
+func ResponseError2(c *gin.Context, err error) {
+	t, ok := err.(*internal.CustomError)
+	if !ok || t == nil {
+		c.JSON(http.StatusInternalServerError, gin.H {
+			"success": false,
+			"message": "Internal server Error",
+		})
+	}
+	code := 0
+
+	switch t.Code {
+	case internal.BadRequest:
+		code = http.StatusBadRequest
+	case internal.NotFound:
+		code = http.StatusNotFound
+	case internal.DatabaseError:
+		code = http.StatusInternalServerError
+	case internal.Unauthorized:
+		code = http.StatusUnauthorized
+	}
+	c.JSON(code, gin.H {
+		"success": false,
+		"message": t.Err.Error(),
 	})
 }
 
@@ -78,19 +105,14 @@ func (a Handler) GetAdsByIDHandler(cmd usecase.GetAdByIdCmd) gin.HandlerFunc {
 func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		account, err := api.Authorize(c)
-		//TODO fix error
+
 		if err != nil {
-			//TODO encapsulate function
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "You need to be logged in",
-			})
+			ResponseError2(c, err)
 			return
 		}
-
 		var ad usecase.CreateAdInput
 		err = c.BindJSON(&ad)
-		ad.UserId = string(account.ID)
+		ad.UserId = string(account)
 		if err != nil {
 			a.logger.Error().Msgf("User CreateAdInput invalid: %v", ad)
 			ResponseError(c, http.StatusBadRequest, FieldsBadRequest)
@@ -115,8 +137,17 @@ func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
 			ResponseError(c, http.StatusBadRequest, MissingIDParam)
 			return
 		}
+		/* AUTHORIZE */
+		_, err := api.Authorize(c)
+
+		if err != nil {
+			ResponseError2(c, err)
+			return
+		}
+		/* END AUTHORIZE */
+
 		var ad usecase.UpdateAdInput
-		err := c.BindJSON(&ad)
+		err = c.BindJSON(&ad)
 		ad.ID = domain.AdID(id)
 
 		if err != nil {
@@ -144,6 +175,15 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 			return
 		}
 
+		/* AUTHORIZE */
+		_, err := api.Authorize(c)
+
+		if err != nil {
+			ResponseError2(c, err)
+			return
+		}
+		/* END AUTHORIZE */
+
 		payload, err := cmd(c.Request.Context(), usecase.DeleteAdInput{ID: domain.AdID(id)})
 		if err != nil {
 			a.logger.Error().Msgf("Error in POST delete ad: %v", err)
@@ -168,6 +208,34 @@ func (a Handler) SearchAdHandler(cmd usecase.SearchAdCmd) gin.HandlerFunc {
 		if err != nil {
 			a.logger.Error().Msgf("Error in GET search ad: %v", err)
 			ResponseError(c, http.StatusInternalServerError, InternalServerError)
+			return
+		}
+		ResponseSuccess(c, http.StatusOK, payload)
+	}
+}
+
+func (a Handler) BuyAdHandler(cmd usecase.BuyAdCmd) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			a.logger.Error().Msg("BuyAdHandler: param ID missing.")
+			ResponseError(c, http.StatusBadRequest, MissingIDParam)
+			return
+		}
+
+		/* AUTHORIZE */
+		_, err := api.Authorize(c)
+
+		if err != nil {
+			ResponseError2(c, err)
+			return
+		}
+		/* END AUTHORIZE */
+		payload, err := cmd(c.Request.Context(), domain.AdID(id))
+
+		if err != nil {
+			a.logger.Error().Msg("Error in GET by /ads/buy/:id")
+			ResponseError2(c, err)
 			return
 		}
 		ResponseSuccess(c, http.StatusOK, payload)

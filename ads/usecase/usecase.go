@@ -14,6 +14,7 @@ type database interface {
 	Create(ctx context.Context, ads ...*domain.Ad) error
 	Remove(ctx context.Context, ads ...*domain.Ad) error
 	Update(ctx context.Context, ad ...*domain.Ad) error
+	Search(ctx context.Context, content string) ([]domain.Ad, error)
 }
 
 type UseCase struct {

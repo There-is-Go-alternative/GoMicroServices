@@ -13,6 +13,7 @@ model Transaction {
   id          String   @id @unique
   seller_id   String
   buyer_id    String
+  ad_id       String   @unique
   date        DateTime @default(now())
   price       Float
 }

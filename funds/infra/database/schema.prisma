@@ -12,6 +12,6 @@ generator db {
 model Funds {
   id           String   @id @unique
   user_id      String   @unique
-  balance      Int
+  balance      Float
   last_updated DateTime @default(now())
 }

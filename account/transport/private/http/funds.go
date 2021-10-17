@@ -76,7 +76,7 @@ func (a FundsHTTP) GetAll() (map[domain.AccountID]*domain.Balance, error) {
 }
 
 func (a FundsHTTP) Delete(ID domain.AccountID) error {
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/%v", a.url, ID.String()), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/user//%v", a.url, ID.String()), nil)
 	if err != nil {
 		return nil
 	}

@@ -37,14 +37,14 @@ func NewHttpServer(uc *usecase.UseCase, conf *config.Config) *Server {
 
 		buyed := api.Group("/buyed/")
 		{
-			buyed.GET("/:id", handler.GetAllBuyedByUser(uc.GetByBuyerId()))
-			buyed.OPTIONS("/user/:id", handler.GetBuyedByDateRangeUser(uc.GetByBuyerIdDateRange()))
+			buyed.GET("/:user_id", handler.GetAllBuyedByUser(uc.GetByBuyerId()))
+			buyed.OPTIONS("/:user_id", handler.GetBuyedByDateRangeUser(uc.GetByBuyerIdDateRange()))
 		}
 
 		selled := api.Group("/selled/")
 		{
-			selled.GET("/:id", handler.GetAllSelledByUser(uc.GetBySellerId()))
-			selled.OPTIONS("/user/:id", handler.GetSelledByDateRangeUser(uc.GetBySellerIdDateRange()))
+			selled.GET("/:user_id", handler.GetAllSelledByUser(uc.GetBySellerId()))
+			selled.OPTIONS("/:user_id", handler.GetSelledByDateRangeUser(uc.GetBySellerIdDateRange()))
 		}
 	}
 

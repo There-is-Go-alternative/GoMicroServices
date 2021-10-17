@@ -132,7 +132,7 @@ services:
     environment:
       HTTP_PORT: 7505
       API_KEY: ${API_KEY}
-      ACCOUNT_URL: "http://auth:7500/"
+      ACCOUNT_URL: "http://account:7500/"
       ADS_URL: "http://ads:7501/"
       FUNDS_URL: "http://funds:7502/"
       CONF_PATH: "config.json"

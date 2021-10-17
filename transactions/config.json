@@ -1,0 +1,8 @@
+{
+  "host": "0.0.0.0",
+  "port": "7505",
+  "api_key": "0647a8a4-a743-46de-bbc1-a87f8f1e0e43",
+  "account_url": "http://account:7500",
+  "funds_url": "http://funds:7575",
+  "ads_url": "http://ads:7501"
+}

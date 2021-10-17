@@ -54,7 +54,11 @@ func (h Handler) getUserId(g *gin.Context) (*string, error) {
 	}
 	token = token[7:]
 	userId, err := h.uc.Auth.GetUser(g, token)
-	return &userId.Id, err
+
+	if err != nil {
+		return nil, err
+	}
+	return &userId.Id, nil
 }
 
 func (h Handler) isAdmin(g *gin.Context) bool {
@@ -179,7 +183,7 @@ func (h Handler) GetByDateRange(cmd usecase.GetByDateRangeCmd) gin.HandlerFunc {
 
 func (h Handler) GetAllBuyedByUser(cmd usecase.GetByBuyerIdCmd) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		id := g.Param("id")
+		id := g.Param("user_id")
 		payload, err := cmd(g.Request.Context(), id)
 
 		if !h.hasAccess(g, id) {
@@ -198,7 +202,7 @@ func (h Handler) GetAllBuyedByUser(cmd usecase.GetByBuyerIdCmd) gin.HandlerFunc 
 
 func (h Handler) GetBuyedByDateRangeUser(cmd usecase.GetByBuyerIdDateRangeCmd) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		id := g.Param("id")
+		id := g.Param("user_id")
 
 		if !h.hasAccess(g, id) {
 			ResponseError(g, http.StatusNetworkAuthenticationRequired, fmt.Errorf("you don't have access to this ressource"))
@@ -228,7 +232,7 @@ func (h Handler) GetBuyedByDateRangeUser(cmd usecase.GetByBuyerIdDateRangeCmd) g
 
 func (h Handler) GetAllSelledByUser(cmd usecase.GetBySellerIdCmd) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		id := g.Param("id")
+		id := g.Param("user_id")
 
 		if !h.hasAccess(g, id) {
 			ResponseError(g, http.StatusNetworkAuthenticationRequired, fmt.Errorf("you don't have access to this ressource"))
@@ -248,7 +252,7 @@ func (h Handler) GetAllSelledByUser(cmd usecase.GetBySellerIdCmd) gin.HandlerFun
 
 func (h Handler) GetSelledByDateRangeUser(cmd usecase.GetBySellerIdDateRangeCmd) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		id := g.Param("id")
+		id := g.Param("user_id")
 
 		if !h.hasAccess(g, id) {
 			ResponseError(g, http.StatusNetworkAuthenticationRequired, fmt.Errorf("you don't have access to this ressource"))

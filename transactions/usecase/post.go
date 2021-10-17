@@ -22,7 +22,11 @@ func getUserId(ctx context.Context, token string, GetUser getUser) (*string, err
 	}
 	token = token[7:]
 	userId, err := GetUser(ctx, token)
-	return &userId.Id, err
+
+	if err != nil {
+		return nil, err
+	}
+	return &userId.Id, nil
 }
 
 type RegiterCmd func(ctx context.Context, ad_id, token string) error
@@ -69,8 +73,13 @@ func (u UseCase) Register() RegiterCmd {
 				return err
 			}
 
-			u.Funds.Decrease(ctx, transaction.BuyerId, transaction.Price)
-			u.Funds.Increase(ctx, transaction.SellerId, transaction.Price)
+			if err = u.Funds.Decrease(ctx, transaction.BuyerId, transaction.Price); err != nil {
+				return err
+			}
+
+			if err = u.Funds.Increase(ctx, transaction.SellerId, transaction.Price); err != nil {
+				return err
+			}
 
 			return u.DB.Register(ctx, transaction)
 		}

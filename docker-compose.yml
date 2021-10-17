@@ -52,8 +52,8 @@ services:
       dockerfile: build/Dockerfile
       target: runner
     # using env file as configuration for non-critical variables
-    env_file:
-      - account/.env
+#    env_file:
+#      - account/.env
     volumes:
 #      # Keeping Logs for Debug/Monitoring purposes.
 #      - ./logs:/logs
@@ -73,6 +73,8 @@ services:
       # Directory to puts logs in.
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
+      AUTH_URL: "auth:7003"
+      BALANCE_URL: "balance:7004"
 
     # Port
     ports:
@@ -158,12 +160,11 @@ services:
       context: chats
       dockerfile: build/Dockerfile
       target: runner
-    env_file:
-      - chats/.env
     volumes:
       - chats_go-modules:/go
     restart: always
     environment:
+      CONF_PATH: "${CHATS_CONF_PATH}"
       LOGS_DIR: "/logs"
       DEBUG_MODE: ${DEBUG_MODE}
     ports:
@@ -172,6 +173,33 @@ services:
     networks:
       - chats
       - account
+
+  auth:
+    image: docker.io/damienbernard42/gomicroservices_authentification
+    container_name: authentification_service
+    build:
+      context: authentification
+      dockerfile: build/Dockerfile
+      target: runner
+    volumes:
+      - authentification_go-modules:/go
+    restart: always
+    environment:
+      MONGO_DB: "${AUTH_MONGO_DB}"
+      USER: "${AUTH_USER}"
+      PASSWORD: "${AUTH_PASSWORD}"
+      MONGO_COLLECTION: "${AUTH_MONGO_COLLECTION}"
+      PORT: "${AUTH_PORT}"
+      MONGO_URI: "${AUTH_MONGO_URI}"
+    expose:
+      - ${AUTH_PORT}
+    ports:
+      - "${AUTH_PORT}:${AUTH_PORT}"
+    networks:
+      - auth
+      - ads
+      - account
+
 
 networks:
   postgres_db:
@@ -192,3 +220,4 @@ volumes:
   ads_go-modules: {}
   funds_go-modules: {}
   chats_go-modules: {}
+  authentification_go-modules: {}

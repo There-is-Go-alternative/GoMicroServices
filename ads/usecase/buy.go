@@ -26,7 +26,7 @@ func (u UseCase) BuyAd() BuyAdCmd {
 		err = u.DB.Update(ctx, ad)
 
 		if err != nil {
-			return nil, internal.NewInternalError(internal.DatabaseError, internal.InternalServerError)
+			return nil, internal.NewInternalError(internal.DatabaseError, internal.InternalServerErrorMsg)
 		}
 
 		return ad, nil

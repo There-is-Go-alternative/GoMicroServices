@@ -2,10 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/ads/domain"
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 )
 
 type CreateAdCmd func(ctx context.Context, input CreateAdInput) (*domain.Ad, error)
@@ -22,14 +21,13 @@ func (u UseCase) CreateAd() CreateAdCmd {
 	return func(ctx context.Context, input CreateAdInput) (*domain.Ad, error) {
 		ad := &domain.Ad{Title: input.Title, Description: input.Description, Price: *input.Price, Pictures: input.Pictures, UserId: input.UserId, State: "open"}
 		AdID, err := domain.NewAdID()
+
 		if err != nil {
-			return nil, err
+			return nil, internal.NewInternalError(internal.InternalServerError, internal.InternalServerErrorMsg)
 		}
 		ad.ID = AdID
 		if !ad.Validate() {
-			return nil, xerrors.ErrorWithCode{
-				Code: xerrors.CodeInvalidData, Err: fmt.Errorf("invalid user ad data: %v", ad),
-			}
+			return nil, internal.NewInternalError(internal.BadRequest, internal.BadRequestMsg)
 		}
 		err = u.DB.Create(ctx, ad)
 		return ad, err

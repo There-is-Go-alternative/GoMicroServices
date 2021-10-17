@@ -51,6 +51,8 @@ func ResponseError2(c *gin.Context, err error) {
 		code = http.StatusNotFound
 	case internal.DatabaseError:
 		code = http.StatusInternalServerError
+	case internal.Unauthorized:
+		code = http.StatusUnauthorized
 	}
 	c.JSON(code, gin.H {
 		"success": false,
@@ -105,7 +107,7 @@ func (a Handler) CreateAdHandler(cmd usecase.CreateAdCmd) gin.HandlerFunc {
 		account, err := api.Authorize(c)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			ResponseError2(c, err)
 			return
 		}
 		var ad usecase.CreateAdInput
@@ -139,7 +141,7 @@ func (a Handler) UpdateAdHandler(cmd usecase.UpdateAdCmd) gin.HandlerFunc {
 		_, err := api.Authorize(c)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			ResponseError2(c, err)
 			return
 		}
 		/* END AUTHORIZE */
@@ -177,7 +179,7 @@ func (a Handler) DeleteAdHandler(cmd usecase.DeleteAdCmd) gin.HandlerFunc {
 		_, err := api.Authorize(c)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			ResponseError2(c, err)
 			return
 		}
 		/* END AUTHORIZE */
@@ -225,7 +227,7 @@ func (a Handler) BuyAdHandler(cmd usecase.BuyAdCmd) gin.HandlerFunc {
 		_, err := api.Authorize(c)
 
 		if err != nil {
-			ResponseError(c, http.StatusUnauthorized, "You need to be logged in")
+			ResponseError2(c, err)
 			return
 		}
 		/* END AUTHORIZE */

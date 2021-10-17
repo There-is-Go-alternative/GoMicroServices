@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal/xerrors"
+	"github.com/There-is-Go-alternative/GoMicroServices/ads/internal"
 	"github.com/gin-gonic/gin"
 )
 
@@ -48,7 +48,7 @@ func Authorize(c *gin.Context) (string, error) {
 	token := c.Request.Header.Get("Authorization")
 
 	if token == "" {
-		return "", xerrors.AuthorizationError
+		return "", internal.NewInternalError(internal.Unauthorized, internal.AuthorizationError)
 	}
 
 	account, err := SendRequest(token)
@@ -64,7 +64,7 @@ func Authorize(c *gin.Context) (string, error) {
 	}
 
 	if new_account_response.Data.UserID == "" {
-		return "", xerrors.AuthorizationError
+		return "", internal.NewInternalError(internal.Unauthorized, internal.AuthorizationNotValid)
 	}
 	return new_account_response.Data.UserID, nil
 }

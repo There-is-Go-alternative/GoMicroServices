@@ -7,15 +7,19 @@ const (
 	AdNotFound   string = "Ad not found"
 	MissingParam string = "Missing param"
 	AuthorizationError string = "Authorization token is not in the headers"
+	AuthorizationNotValid string = "Authorization token is not valid"
 	AdIsClose string = "Ad is closed"
-	Unauthorized string = "You don't have the authorization"
-	InternalServerError string = "Intertal server error"
+	UnauthorizedAccess string = "You don't have the authorization"
+	InternalServerErrorMsg string = "Internal server error"
+	BadRequestMsg string = "Bad request"
 )
 
 const (
 	NotFound = iota
 	BadRequest
 	DatabaseError
+	Unauthorized
+	InternalServerError
 )
 
 type CustomError struct {

@@ -45,15 +45,15 @@ func validateEmail(email string) error {
 // Account is a type that represent a user account
 // ID could be later change by a UUID
 type Account struct {
-	ID        AccountID `json:"id"`
+	ID        AccountID `json:"id,omitempty"`
 	Email     string    `json:"email"`
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
 	Admin     bool      `json:"admin,omitempty"`
 	Address   Address   `json:"address,omitempty"`
-	Balance   int       `json:"balance"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Balance   int       `json:"balance,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 // Validate check presence of minimal data required for an Account.

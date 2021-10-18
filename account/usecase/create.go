@@ -46,9 +46,9 @@ func (u UseCase) CreateAccount() CreateAccountCmd {
 
 		// Adding createdAt timestamp
 		account.CreatedAt = time.Now()
-		//if err = u.AuthService.Register(input.Email, input.Password, account.ID); err != nil {
-		//	return nil, fmt.Errorf("error when calling Auth service Create: %v", err)
-		//}
+		if err = u.AuthService.Register(input.Email, input.Password, account.ID); err != nil {
+			return nil, fmt.Errorf("error when calling Auth service Create: %v", err)
+		}
 		if err = u.BalanceService.Create(account.ID); err != nil {
 			return nil, fmt.Errorf("error when calling Auth service Create: %v", err)
 		}

@@ -12,7 +12,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/gofiber/fiber/v2 v2.20.2
+	github.com/gofiber/cors v0.2.2
 	github.com/gofiber/utils v0.0.10 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/schema v1.1.0 // indirect

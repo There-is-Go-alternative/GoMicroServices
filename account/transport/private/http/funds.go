@@ -66,7 +66,7 @@ func (a FundsHTTP) GetAll() (map[domain.AccountID]*domain.Balance, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("funds Get: Status differs from expected: %v", http.StatusOK)
+		return nil, fmt.Errorf("funds Get: Status differs from expected: %v (exp: %v)", resp.StatusCode, http.StatusOK)
 	}
 	m := make(map[domain.AccountID]*domain.Balance)
 	for _, b := range rep {
@@ -76,7 +76,7 @@ func (a FundsHTTP) GetAll() (map[domain.AccountID]*domain.Balance, error) {
 }
 
 func (a FundsHTTP) Delete(ID domain.AccountID) error {
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/user//%v", a.url, ID.String()), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("http://%s/user/%v", a.url, ID.String()), nil)
 	if err != nil {
 		return nil
 	}
@@ -87,7 +87,7 @@ func (a FundsHTTP) Delete(ID domain.AccountID) error {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("auth: Status differs from expected: %v", http.StatusOK)
+		return fmt.Errorf("funds delete: Status differs from expected: %v (exp: %v)", resp.StatusCode, http.StatusOK)
 	}
 	return nil
 }

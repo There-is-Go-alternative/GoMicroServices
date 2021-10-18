@@ -50,7 +50,7 @@ type Account struct {
 	Lastname  string    `json:"lastname"`
 	Admin     bool      `json:"admin,omitempty"`
 	Address   Address   `json:"address,omitempty"`
-	Balance   float64   `json:"balance,omitempty"`
+	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

@@ -29,6 +29,7 @@ type BalanceService interface {
 	Create(ID domain.AccountID) error
 	GetByID(ID domain.AccountID) (*float64, error)
 	GetAll() (map[domain.AccountID]*domain.Balance, error)
+	Delete(ID domain.AccountID) error
 }
 
 // UseCase handle the business logic

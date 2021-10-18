@@ -25,6 +25,9 @@ func (u UseCase) DeleteAccount() DeleteAccountCmd {
 		if err = u.AuthService.Unregister(acc.Email, input.Email, input.ID); err != nil {
 			return nil, err
 		}
+		if err = u.BalanceService.Delete(input.ID); err != nil {
+			return nil, err
+		}
 		return acc, err
 	}
 }

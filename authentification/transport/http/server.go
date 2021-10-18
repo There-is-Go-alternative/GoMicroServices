@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/usecase"
+	"github.com/gofiber/cors"
 	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type UseCase interface {

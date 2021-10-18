@@ -21,8 +21,8 @@ type Database interface {
 
 type AuthService interface {
 	Authorize(token string) (domain.AccountID, error)
-	Register(email, password string) error
-	Unregister(email string) error
+	Register(email, password string, id domain.AccountID) error
+	Unregister(email, password string, id domain.AccountID) error
 }
 
 type BalanceService interface {

@@ -10,7 +10,9 @@ type DeleteAccountCmd func(ctx context.Context, input DeleteAccountInput) (*doma
 
 // DeleteAccountInput is used by UseCase.DeleteAccount for the deletion of an account.
 type DeleteAccountInput struct {
-	ID domain.AccountID `json:"id" binding:"required"`
+	ID       domain.AccountID `json:"id" binding:"required"`
+	Email    string           `json:"email" binding:"required"`
+	Password string           `json:"password" binding:"required"`
 }
 
 // DeleteAccount is the UseCase handler that delete a domain.Account.
@@ -20,7 +22,7 @@ func (u UseCase) DeleteAccount() DeleteAccountCmd {
 		if err != nil {
 			return nil, err
 		}
-		if err = u.AuthService.Unregister(acc.Email); err != nil {
+		if err = u.AuthService.Unregister(acc.Email, input.Email, input.ID); err != nil {
 			return nil, err
 		}
 		return acc, err

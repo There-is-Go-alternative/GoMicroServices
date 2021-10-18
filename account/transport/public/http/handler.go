@@ -107,11 +107,16 @@ func (a Handler) PatchAccountHandler(cmd usecase.PatchAccountCmd) gin.HandlerFun
 			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
 			return
 		}
+		if token := c.GetString(AccountIDKey); token != id && token != a.APIKey {
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+
 		var account usecase.PatchAccountInput
 		err := c.BindJSON(&account)
 		if err != nil {
 			a.logger.Error().Msgf("PatchAccountInput invalid: %v", account)
-			// TODO: better error
 			_ = c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
@@ -119,7 +124,6 @@ func (a Handler) PatchAccountHandler(cmd usecase.PatchAccountCmd) gin.HandlerFun
 		payload, err := cmd(c.Request.Context(), account)
 		if err != nil {
 			a.logger.Error().Msgf("Error in PATCH account: %v", err)
-			// TODO: better error
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
@@ -139,6 +143,12 @@ func (a Handler) PutAccountHandler(cmd usecase.UpdateAccountCmd) gin.HandlerFunc
 			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
 			return
 		}
+		if token := c.GetString(AccountIDKey); token != id && token != a.APIKey {
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+
 		var account usecase.UpdateAccountInput
 		err := c.BindJSON(&account)
 		if err != nil {
@@ -169,6 +179,11 @@ func (a Handler) DeleteAccountHandler(cmd usecase.DeleteAccountCmd) gin.HandlerF
 		if id == "" {
 			a.logger.Error().Msg("DeleteAccountHandler: param ID missing.")
 			_ = c.AbortWithError(http.StatusInternalServerError, xerrors.MissingParam)
+			return
+		}
+		if token := c.GetString(AccountIDKey); token != id && token != a.APIKey {
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -214,6 +229,7 @@ func (a Handler) Authorize() gin.HandlerFunc {
 			return
 		}
 		if token == a.APIKey {
+			c.Set(AccountIDKey, a.APIKey)
 			return
 		}
 		tokenSplitted := strings.Split(token, "Bearer ")

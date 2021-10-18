@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"log"
 
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/domain"
 )
@@ -13,6 +14,7 @@ func (u UseCase) Register() RegisterProto {
 
 		err := u.DB.Save(ctx, input)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 

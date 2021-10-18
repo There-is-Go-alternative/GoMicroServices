@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/There-is-Go-alternative/GoMicroServices/authentification/usecase"
 	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type UseCase interface {
@@ -14,6 +15,7 @@ type UseCase interface {
 
 func NewHttpServer(u UseCase) *fiber.App {
 	app := fiber.New()
+	app.Use(cors.New())
 
 	app.Post("/login", LoginHandler(u.Login()))
 	app.Post("/authorize", AuthorizeHandler(u.Authorize()))

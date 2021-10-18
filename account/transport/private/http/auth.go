@@ -7,7 +7,6 @@ import (
 	"github.com/There-is-Go-alternative/GoMicroServices/account/domain"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -63,16 +62,12 @@ func (a AuthHTTP) Authorize(token string) (domain.AccountID, error) {
 
 func (a *AuthHTTP) Register(email, password string, id domain.AccountID) error {
 	payloadBuf := new(bytes.Buffer)
-	data := url.Values{
-		"id":       {id.String()},
-		"email":    {email},
-		"password": {password},
-	}
+	data := &RegisterPayload{ID: id.String(), Email: email, Password: password}
 	if err := json.NewEncoder(payloadBuf).Encode(data); err != nil {
 		return fmt.Errorf("AuthHTTP register: %v", err)
 	}
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/register", a.url), payloadBuf)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 	if err != nil {
 		return nil
 	}
@@ -88,16 +83,12 @@ func (a *AuthHTTP) Register(email, password string, id domain.AccountID) error {
 
 func (a *AuthHTTP) Unregister(email, password string, id domain.AccountID) error {
 	payloadBuf := new(bytes.Buffer)
-	data := url.Values{
-		"id":       {id.String()},
-		"email":    {email},
-		"password": {password},
-	}
+	data := &RegisterPayload{ID: id.String(), Email: email, Password: password}
 	if err := json.NewEncoder(payloadBuf).Encode(data); err != nil {
 		return fmt.Errorf("AuthHTTP unregister: %v", err)
 	}
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("http://%s/unregister", a.url), payloadBuf)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 	if err != nil {
 		return nil
 	}

@@ -12,7 +12,7 @@ require (
 	google.golang.org/api v0.58.0
 )
 
-require github.com/gin-gonic/gin v1.7.4
+require github.com/gin-gonic/gin v1.7.7
 
 require (
 	cloud.google.com/go/storage v1.18.0 // indirect
